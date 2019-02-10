@@ -327,7 +327,7 @@ export class SAX {
         SCRIPT: this.S++, // <script> ...
         SCRIPT_ENDING: this.S++, // <script> ... <
     };
-    private SAXParser: SAXParser;
+    private SAXParser: any;
     private SAXStream: any;
     private createStream: any;
     private BUFFERS: string[];
@@ -354,8 +354,6 @@ export class SAX {
 
     constructor() {
         this.SAXParser = SAXParser;
-        this.SAXStream = SAXStream;
-        this.createStream = createStream;
         this.MAX_BUFFER_LENGTH = 64 * 1024;
         this.BUFFERS = [
             'comment',
@@ -392,6 +390,23 @@ export class SAX {
             'closenamespace',
         ];
 
+        this.S = 0;
+
+        const that = this;
+        Object.keys(this.ENTITIES).forEach(function (key) {
+            const e = that.ENTITIES[key];
+            that.ENTITIES[key] = typeof e === 'number' ? String.fromCharCode(e) : e;
+        });
+
+        for (const s in this.STATE) {
+            if (this.STATE.hasOwnProperty(s)) {
+                this.STATE[this.STATE[s]] = s;
+            }
+        }
+
+        // shorthand
+        this.S = this.STATE;
+
         this.parser = function (strict, opt) {
             return new SAXParser(strict, opt);
         };
@@ -425,7 +440,7 @@ export class SAX {
         return !SAX.isMatch(regex, c);
     }
 
-    private static qname(name, attribute? = false) {
+    private static qname(name, attribute?) {
         const i = name.indexOf(':');
         const qualName = i < 0 ? ['', name] : name.split(':');
         let prefix = qualName[0];
@@ -473,7 +488,7 @@ export class SAX {
         this.c = '';
         this.closed = true;
         this.emit('onend');
-        SAXParser.call(this, this.strict, this.opt);
+        new SAXParser(this.strict, this.opt);
         return this;
     }
 
@@ -1171,7 +1186,7 @@ export class SAX {
         const maxAllowed = Math.max(this.MAX_BUFFER_LENGTH, 10);
         let maxActual = 0;
         for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
-            const len = this[this.BUFFERS[i]].length;
+            const len = this.hasOwnProperty(this.BUFFERS[i]) ? this[this.BUFFERS[i]].length : 0;
             if (len > maxAllowed) {
                 // Text/cdata nodes can get big, and since they're buffered,
                 // we can get here under normal conditions.
@@ -1354,7 +1369,7 @@ export class SAX {
     }
 }
 
-class SAXParser extends SAX {
+export class SAXParser extends SAX {
     constructor(strict, opt) {
         super();
 
