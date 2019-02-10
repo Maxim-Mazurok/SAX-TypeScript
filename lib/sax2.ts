@@ -506,7 +506,7 @@ export class SAX {
             chunk = chunk.toString();
         }
         let i = 0;
-        let c = '';
+        let c: string;
         while (true) {
             c = SAX.charAt(chunk, i++);
             this.c = c;
