@@ -1,25 +1,34 @@
 {
-  "name": "sax",
-  "description": "An evented streaming XML parser in JavaScript",
-  "author": "Isaac Z. Schlueter <i@izs.me> (http://blog.izs.me/)",
-  "version": "1.2.4",
-  "main": "lib/sax.js",
+  "name": "sax-ts",
+  "description": "Event-driven XML parser in TypeScript",
+  "author": "Maxim Mazurok <maxim@mazurok.com> (https://maxim.mazurok.com/)",
+  "version": "1.2.5",
+  "main": "src/sax.ts",
   "license": "ISC",
   "scripts": {
     "test": "tap test/*.js --cov -j4",
-    "posttest": "standard -F test/*.js lib/*.js",
+    "posttest": "npm run check",
     "preversion": "npm test",
     "postversion": "npm publish",
-    "postpublish": "git push origin --all; git push origin --tags"
+    "postpublish": "git push origin --all; git push origin --tags",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile"
   },
-  "repository": "git://github.com/isaacs/sax-js.git",
+  "repository": "git://github.com/Maxim-Mazurok/SAX-TypeScript.git",
   "files": [
-    "lib/sax.js",
-    "LICENSE",
+    "src/sax2.ts",
+    "build/src/sax2.d.ts",
+    "build/src/sax2.js",
+    "LICENSE.md",
     "README.md"
   ],
   "devDependencies": {
-    "standard": "^8.6.0",
-    "tap": "^10.5.1"
+    "gts": "^0.9.0",
+    "tap": "^10.5.1",
+    "typescript": "~3.1.0"
   }
 }

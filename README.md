@@ -1,9 +1,8 @@
-# sax js
+# SAX-TypeScript (Simple API for XML in TypeScript) [in-development]
 
-A sax-style parser for XML and HTML.
+A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML and HTML.
 
-Designed with [node](http://nodejs.org/) in mind, but should work fine in
-the browser or other CommonJS implementations.
+Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 
 ## What This Is
 
@@ -17,7 +16,7 @@ the browser or other CommonJS implementations.
 * An HTML Parser - That's a fine goal, but this isn't it.  It's just
   XML.
 * A DOM Builder - You can use it to build an object model out of XML,
-  but it doesn't do that out of the box.
+  but it does not do that out of the box.
 * XSLT - No DOM = no querying.
 * 100% Compliant with (some other SAX implementation) - Most SAX
   implementations are in Java and do a lot more than this does.
@@ -44,7 +43,7 @@ through unmolested.
 ```javascript
 var sax = require("./lib/sax"),
   strict = true, // set to false for html-mode
-  parser = sax.parser(strict);
+  parser = new sax.SAXParser(strict);
 
 parser.onerror = function (e) {
   // an error happened.
@@ -222,4 +221,4 @@ accept pull requests with failing tests if they demonstrate intended
 behavior, but it is very hard to figure out what issue you're describing
 without a test.  Writing a test is also the best way for you yourself
 to figure out if you really understand the issue you think you have with
-sax-js.
+SAX-TypeScript.

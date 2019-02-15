@@ -1,7 +1,7 @@
 // pull out /GeneralSearchResponse/categories/category/items/product tags
 // the rest we don't care about.
 
-var sax = require('../lib/sax.js')
+var sax = require('../src/sax.js')
 var fs = require('fs')
 var path = require('path')
 var xmlFile = path.resolve(__dirname, 'shopping.xml')
@@ -13,7 +13,7 @@ fs.readFile(xmlFile, function (er, d) {
     if (er) throw er
     var xmlstr = d.toString('utf8')
 
-    var parser = sax.parser(true)
+    var parser = new sax.SAXParser(true)
     var products = []
     var product = null
     var currentTag = null

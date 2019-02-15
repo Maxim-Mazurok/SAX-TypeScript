@@ -1,5 +1,5 @@
 var tap = require('tap')
-var saxStream = require('../lib/sax').createStream()
+var saxStream = require('../build/src/sax2.js').createStream()
 tap.doesNotThrow(function () {
   saxStream.end()
 })

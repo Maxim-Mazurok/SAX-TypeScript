@@ -2,9 +2,9 @@ var fs = require('fs'),
   util = require('util'),
   path = require('path'),
   xml = fs.readFileSync(path.join(__dirname, 'test.xml'), 'utf8'),
-  sax = require('../lib/sax'),
-  strict = sax.parser(true),
-  loose = sax.parser(false, {trim: true}),
+  sax = require('../build/src/sax2.js'),
+  strict = new sax.SAXParser(true),
+  loose = new sax.SAXParser(false, {trim: true}),
   inspector = function (ev) { return function (data) {
       console.error('%s %s %j', this.line + ':' + this.column, ev, data)
     }}

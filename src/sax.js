@@ -15,7 +15,7 @@
   // Set to Infinity to have unlimited buffers.
   sax.MAX_BUFFER_LENGTH = 64 * 1024
 
-  var buffers = [
+  var BUFFERS = [
     'comment', 'sgmlDecl', 'textNode', 'tagName', 'doctype',
     'procInstName', 'procInstBody', 'entity', 'attribName',
     'attribValue', 'cdata', 'script'
@@ -79,34 +79,17 @@
     emit(parser, 'onready')
   }
 
-  if (!Object.create) {
-    Object.create = function (o) {
-      function F () {}
-      F.prototype = o
-      var newf = new F()
-      return newf
-    }
-  }
-
-  if (!Object.keys) {
-    Object.keys = function (o) {
-      var a = []
-      for (var i in o) if (o.hasOwnProperty(i)) a.push(i)
-      return a
-    }
-  }
-
   function checkBufferLength (parser) {
     var maxAllowed = Math.max(sax.MAX_BUFFER_LENGTH, 10)
     var maxActual = 0
-    for (var i = 0, l = buffers.length; i < l; i++) {
-      var len = parser[buffers[i]].length
+    for (var i = 0, l = BUFFERS.length; i < l; i++) {
+      var len = parser[BUFFERS[i]].length
       if (len > maxAllowed) {
         // Text/cdata nodes can get big, and since they're buffered,
         // we can get here under normal conditions.
         // Avoid issues by emitting the text node now,
         // so at least it won't get any bigger.
-        switch (buffers[i]) {
+        switch (BUFFERS[i]) {
           case 'textNode':
             closeText(parser)
             break
@@ -122,7 +105,7 @@
             break
 
           default:
-            error(parser, 'Max buffer length exceeded: ' + buffers[i])
+            error(parser, 'Max buffer length exceeded: ' + BUFFERS[i])
         }
       }
       maxActual = Math.max(maxActual, len)
@@ -133,8 +116,8 @@
   }
 
   function clearBuffers (parser) {
-    for (var i = 0, l = buffers.length; i < l; i++) {
-      parser[buffers[i]] = ''
+    for (var i = 0, l = BUFFERS.length; i < l; i++) {
+      parser[BUFFERS[i]] = ''
     }
   }
 
@@ -158,109 +141,109 @@
     flush: function () { flushBuffers(this) }
   }
 
-  var Stream
-  try {
-    Stream = require('stream').Stream
-  } catch (ex) {
-    Stream = function () {}
-  }
-
-  var streamWraps = sax.EVENTS.filter(function (ev) {
-    return ev !== 'error' && ev !== 'end'
-  })
-
-  function createStream (strict, opt) {
-    return new SAXStream(strict, opt)
-  }
-
-  function SAXStream (strict, opt) {
-    if (!(this instanceof SAXStream)) {
-      return new SAXStream(strict, opt)
-    }
-
-    Stream.apply(this)
-
-    this._parser = new SAXParser(strict, opt)
-    this.writable = true
-    this.readable = true
-
-    var me = this
-
-    this._parser.onend = function () {
-      me.emit('end')
-    }
-
-    this._parser.onerror = function (er) {
-      me.emit('error', er)
-
-      // if didn't throw, then means error was handled.
-      // go ahead and clear error, so we can write again.
-      me._parser.error = null
-    }
-
-    this._decoder = null
-
-    streamWraps.forEach(function (ev) {
-      Object.defineProperty(me, 'on' + ev, {
-        get: function () {
-          return me._parser['on' + ev]
-        },
-        set: function (h) {
-          if (!h) {
-            me.removeAllListeners(ev)
-            me._parser['on' + ev] = h
-            return h
-          }
-          me.on(ev, h)
-        },
-        enumerable: true,
-        configurable: false
-      })
-    })
-  }
-
-  SAXStream.prototype = Object.create(Stream.prototype, {
-    constructor: {
-      value: SAXStream
-    }
-  })
-
-  SAXStream.prototype.write = function (data) {
-    if (typeof Buffer === 'function' &&
-      typeof Buffer.isBuffer === 'function' &&
-      Buffer.isBuffer(data)) {
-      if (!this._decoder) {
-        var SD = require('string_decoder').StringDecoder
-        this._decoder = new SD('utf8')
-      }
-      data = this._decoder.write(data)
-    }
-
-    this._parser.write(data.toString())
-    this.emit('data', data)
-    return true
-  }
-
-  SAXStream.prototype.end = function (chunk) {
-    if (chunk && chunk.length) {
-      this.write(chunk)
-    }
-    this._parser.end()
-    return true
-  }
-
-  SAXStream.prototype.on = function (ev, handler) {
-    var me = this
-    if (!me._parser['on' + ev] && streamWraps.indexOf(ev) !== -1) {
-      me._parser['on' + ev] = function () {
-        var args = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)
-        args.splice(0, 0, ev)
-        me.emit.apply(me, args)
-      }
-    }
-
-    return Stream.prototype.on.call(me, ev, handler)
-  }
+  // var Stream
+  // try {
+  //   Stream = require('stream').Stream
+  // } catch (ex) {
+  //   Stream = function () {}
+  // }
+  //
+  // var streamWraps = sax.EVENTS.filter(function (ev) {
+  //   return ev !== 'error' && ev !== 'end'
+  // })
+  //
+  // function createStream (strict, opt) {
+  //   return new SAXStream(strict, opt)
+  // }
+  //
+  // function SAXStream (strict, opt) {
+  //   if (!(this instanceof SAXStream)) {
+  //     return new SAXStream(strict, opt)
+  //   }
+  //
+  //   Stream.apply(this)
+  //
+  //   this._parser = new SAXParser(strict, opt)
+  //   this.writable = true
+  //   this.readable = true
+  //
+  //   var me = this
+  //
+  //   this._parser.onend = function () {
+  //     me.emit('end')
+  //   }
+  //
+  //   this._parser.onerror = function (er) {
+  //     me.emit('error', er)
+  //
+  //     // if didn't throw, then means error was handled.
+  //     // go ahead and clear error, so we can write again.
+  //     me._parser.error = null
+  //   }
+  //
+  //   this._decoder = null
+  //
+  //   streamWraps.forEach(function (ev) {
+  //     Object.defineProperty(me, 'on' + ev, {
+  //       get: function () {
+  //         return me._parser['on' + ev]
+  //       },
+  //       set: function (h) {
+  //         if (!h) {
+  //           me.removeAllListeners(ev)
+  //           me._parser['on' + ev] = h
+  //           return h
+  //         }
+  //         me.on(ev, h)
+  //       },
+  //       enumerable: true,
+  //       configurable: false
+  //     })
+  //   })
+  // }
+  //
+  // SAXStream.prototype = Object.create(Stream.prototype, {
+  //   constructor: {
+  //     value: SAXStream
+  //   }
+  // })
+  //
+  // SAXStream.prototype.write = function (data) {
+  //   if (typeof Buffer === 'function' &&
+  //     typeof Buffer.isBuffer === 'function' &&
+  //     Buffer.isBuffer(data)) {
+  //     if (!this._decoder) {
+  //       var SD = require('string_decoder').StringDecoder
+  //       this._decoder = new SD('utf8')
+  //     }
+  //     data = this._decoder.write(data)
+  //   }
+  //
+  //   this._parser.write(data.toString())
+  //   this.emit('data', data)
+  //   return true
+  // }
+  //
+  // SAXStream.prototype.end = function (chunk) {
+  //   if (chunk && chunk.length) {
+  //     this.write(chunk)
+  //   }
+  //   this._parser.end()
+  //   return true
+  // }
+  //
+  // SAXStream.prototype.on = function (ev, handler) {
+  //   var me = this
+  //   if (!me._parser['on' + ev] && streamWraps.indexOf(ev) !== -1) {
+  //     me._parser['on' + ev] = function () {
+  //       var args = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)
+  //       args.splice(0, 0, ev)
+  //       me.emit.apply(me, args)
+  //     }
+  //   }
+  //
+  //   return Stream.prototype.on.call(me, ev, handler)
+  // }
 
   // this really needs to be replaced with character classes.
   // XML allows all manner of ridiculous numbers and digits.
@@ -1507,59 +1490,4 @@
     return parser
   }
 
-  /*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
-  /* istanbul ignore next */
-  if (!String.fromCodePoint) {
-    (function () {
-      var stringFromCharCode = String.fromCharCode
-      var floor = Math.floor
-      var fromCodePoint = function () {
-        var MAX_SIZE = 0x4000
-        var codeUnits = []
-        var highSurrogate
-        var lowSurrogate
-        var index = -1
-        var length = arguments.length
-        if (!length) {
-          return ''
-        }
-        var result = ''
-        while (++index < length) {
-          var codePoint = Number(arguments[index])
-          if (
-            !isFinite(codePoint) || // `NaN`, `+Infinity`, or `-Infinity`
-            codePoint < 0 || // not a valid Unicode code point
-            codePoint > 0x10FFFF || // not a valid Unicode code point
-            floor(codePoint) !== codePoint // not an integer
-          ) {
-            throw RangeError('Invalid code point: ' + codePoint)
-          }
-          if (codePoint <= 0xFFFF) { // BMP code point
-            codeUnits.push(codePoint)
-          } else { // Astral code point; split in surrogate halves
-            // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
-            codePoint -= 0x10000
-            highSurrogate = (codePoint >> 10) + 0xD800
-            lowSurrogate = (codePoint % 0x400) + 0xDC00
-            codeUnits.push(highSurrogate, lowSurrogate)
-          }
-          if (index + 1 === length || codeUnits.length > MAX_SIZE) {
-            result += stringFromCharCode.apply(null, codeUnits)
-            codeUnits.length = 0
-          }
-        }
-        return result
-      }
-      /* istanbul ignore next */
-      if (Object.defineProperty) {
-        Object.defineProperty(String, 'fromCodePoint', {
-          value: fromCodePoint,
-          configurable: true,
-          writable: true
-        })
-      } else {
-        String.fromCodePoint = fromCodePoint
-      }
-    }())
-  }
 })(typeof exports === 'undefined' ? this.sax = {} : exports)

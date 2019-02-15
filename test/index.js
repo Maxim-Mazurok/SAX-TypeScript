@@ -1,4 +1,4 @@
-var sax = require('../lib/sax')
+var sax = require('../build/src/sax2.js')
 
 var t = require('tap')
 
@@ -9,10 +9,10 @@ exports.sax = sax
 // otherwise, it's assumed that the test will write and close.
 exports.test = function test (options) {
   var xml = options.xml
-  var parser = sax.parser(options.strict, options.opt)
+  var parser = new sax.SAXParser(options.strict, options.opt)
   var expect = options.expect
   var e = 0
-  sax.EVENTS.forEach(function (ev) {
+  parser.EVENTS.forEach(function (ev) {
     parser['on' + ev] = function (n) {
       if (process.env.DEBUG) {
         console.error({
