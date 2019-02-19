@@ -3,7 +3,7 @@
   "description": "Event-driven XML parser in TypeScript",
   "author": "Maxim Mazurok <maxim@mazurok.com> (https://maxim.mazurok.com/)",
   "version": "1.2.5",
-  "main": "src/sax.ts",
+  "main": "build/src/sax2.js",
   "license": "ISC",
   "scripts": {
     "test": "tap test/*.js --cov -j4",
