@@ -1,9 +1,5 @@
-// set this really low so that I don't have to put 64 MB of xml in here.
-var sax = require('../build/src/sax2.js')
-var bl = sax.MAX_BUFFER_LENGTH
-sax.MAX_BUFFER_LENGTH = 5
-
 require(__dirname).test({
+  opt: { MAX_BUFFER_LENGTH: 5 },
   expect: [
     ['error', 'Max buffer length exceeded: tagName\nLine: 0\nColumn: 15\nChar: '],
     ['error', 'Max buffer length exceeded: tagName\nLine: 0\nColumn: 30\nChar: '],
@@ -27,4 +23,3 @@ require(__dirname).test({
   .write('yo')
   .write('</abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ>')
   .close()
-sax.MAX_BUFFER_LENGTH = bl

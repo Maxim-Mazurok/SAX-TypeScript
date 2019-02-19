@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-console.log = function () { };
+console.log = console.warn = console.error = function () { }; // TODO: remove all console's after tests fixed
 const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
 const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
@@ -331,7 +331,6 @@ class SAX {
         this.textNode = '';
         this.startTagPosition = 0;
         this.SAXParser = SAXParser;
-        this.MAX_BUFFER_LENGTH = 64 * 1024;
         this.BUFFERS = [
             'comment',
             'sgmlDecl',
@@ -1175,7 +1174,7 @@ class SAX {
         this.textNode = '';
     }
     checkBufferLength() {
-        const maxAllowed = Math.max(this.MAX_BUFFER_LENGTH, 10);
+        const maxAllowed = Math.max(this.opt.MAX_BUFFER_LENGTH, 10);
         let maxActual = 0;
         for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
             const len = this.hasOwnProperty(this.BUFFERS[i]) ? this[this.BUFFERS[i]].length : 0;
@@ -1197,13 +1196,14 @@ class SAX {
                         this.script = '';
                         break;
                     default:
+                        console.error('BUF');
                         this.errorFunction('Max buffer length exceeded: ' + this.BUFFERS[i]);
                 }
             }
             maxActual = Math.max(maxActual, len);
         }
         // schedule the next check for the earliest possible buffer overrun.
-        const m = this.MAX_BUFFER_LENGTH - maxActual;
+        const m = this.opt.MAX_BUFFER_LENGTH - maxActual;
         this.bufferCheckPosition = m + this.position;
     }
     openTag(selfClosing) {
@@ -1374,32 +1374,31 @@ class SAXParser extends SAX {
         if (!(this instanceof SAXParser)) {
             return new SAXParser(strict, opt);
         }
-        const parser = this;
         this.clearBuffers();
-        parser.q = parser.c = '';
-        parser.bufferCheckPosition = this.MAX_BUFFER_LENGTH;
-        parser.opt = opt || {};
-        parser.opt.lowercase = parser.opt.lowercase || parser.opt.lowercasetags;
-        parser.looseCase = parser.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
-        parser.tags = [];
-        parser.closed = parser.closedRoot = parser.sawRoot = false;
-        parser.tag = parser.error = null;
-        parser.strict = !!strict;
-        parser.noscript = !!(strict || parser.opt.noscript);
-        parser.state = this.S.BEGIN;
-        parser.strictEntities = parser.opt.strictEntities;
-        parser.ENTITIES = parser.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
-        parser.attribList = [];
+        this.q = this.c = '';
+        this.opt = Object.assign({ MAX_BUFFER_LENGTH: 64 * 1024 }, opt);
+        this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
+        this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags;
+        this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
+        this.tags = [];
+        this.closed = this.closedRoot = this.sawRoot = false;
+        this.tag = this.error = null;
+        this.strict = !!strict;
+        this.noscript = !!(strict || this.opt.noscript);
+        this.state = this.S.BEGIN;
+        this.strictEntities = this.opt.strictEntities;
+        this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
+        this.attribList = [];
         // namespaces form a prototype chain.
         // it always points at the current tag,
         // which protos to its parent tag.
-        if (parser.opt.xmlns) {
-            parser.ns = Object.create(this.rootNS);
+        if (this.opt.xmlns) {
+            this.ns = Object.create(this.rootNS);
         }
         // mostly just for error reporting
-        parser.trackPosition = parser.opt.position !== false;
-        if (parser.trackPosition) {
-            parser.position = parser.line = parser.column = 0;
+        this.trackPosition = this.opt.position !== false;
+        if (this.trackPosition) {
+            this.position = this.line = this.column = 0;
         }
         this.emit('onready');
     }

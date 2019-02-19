@@ -4,7 +4,6 @@ interface SAXInterface {
 export declare class SAX implements SAXInterface {
     [key: string]: any;
     EVENTS: string[];
-    protected MAX_BUFFER_LENGTH: number;
     protected XML_ENTITIES: {
         [key: string]: string;
     };
