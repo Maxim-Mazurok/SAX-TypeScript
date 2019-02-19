@@ -263,14 +263,14 @@ Object.keys(ENTITIES).forEach(function (key) {
 });
 
 interface SAXInterface {
-  [key: string]: any
+  [key: string]: any;
 }
 
 export class SAX implements SAXInterface {
   [key: string]: any;
 
-  public EVENTS: string[];
-  public ENTITIES: { [key: string]: number | string } = { // TODO: make it readonly, needed for entity-mega test
+  EVENTS: string[];
+  ENTITIES: { [key: string]: number | string } = { // TODO: make it readonly, needed for entity-mega test
     // amp, gt, lt, quot and apos are resolved to strings instead of numerical codes, IDK why
     ...ENTITIES,
   };
@@ -283,26 +283,26 @@ export class SAX implements SAXInterface {
   };
   protected S: any = 0;
   protected opt: any;
-  protected trackPosition: boolean = false;
-  protected column: number = 0;
-  protected line: number = 0;
-  protected c: string = '';
+  protected trackPosition = false;
+  protected column = 0;
+  protected line = 0;
+  protected c = '';
   protected error: any;
-  protected q: string = '';
+  protected q = '';
   protected bufferCheckPosition: any;
-  protected closed: boolean = false;
+  protected closed = false;
   protected tags: any[] = [];
-  protected looseCase: string = '';
-  protected closedRoot: boolean = false;
-  protected sawRoot: boolean = false;
-  protected strict: boolean = false;
+  protected looseCase = '';
+  protected closedRoot = false;
+  protected sawRoot = false;
+  protected strict = false;
   protected tag: any;
   protected strictEntities: any;
   protected state: any;
-  protected noscript: boolean = false;
+  protected noscript = false;
   protected attribList: any[] = [];
   protected ns: any;
-  protected position: number = 0;
+  protected position = 0;
   private STATE: { [index: string]: any } = {
     BEGIN: this.S++, // leading byte order mark or whitespace
     BEGIN_WHITESPACE: this.S++, // leading whitespace
@@ -344,24 +344,24 @@ export class SAX implements SAXInterface {
   private SAXParser: any;
   private readonly BUFFERS: string[];
   private parser: (strict: boolean, opt: any) => SAXParser;
-  private CDATA: string = '[CDATA[';
-  private DOCTYPE: string = 'DOCTYPE';
-  private XML_NAMESPACE: string = 'http://www.w3.org/XML/1998/namespace';
-  private XMLNS_NAMESPACE: string = 'http://www.w3.org/2000/xmlns/';
+  private CDATA = '[CDATA[';
+  private DOCTYPE = 'DOCTYPE';
+  private XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
+  private XMLNS_NAMESPACE = 'http://www.w3.org/2000/xmlns/';
   protected rootNS: {} = {xml: this.XML_NAMESPACE, xmlns: this.XMLNS_NAMESPACE};
   private comment: any;
   private sgmlDecl: any;
-  private textNode: string = '';
+  private textNode = '';
   private tagName: any;
   private doctype: any;
   private procInstName: any;
   private procInstBody: any;
-  private entity: string = '';
+  private entity = '';
   private attribName: any;
   private attribValue: any;
-  private cdata: string = '';
-  private script: string = '';
-  private startTagPosition: number = 0;
+  private cdata = '';
+  private script = '';
+  private startTagPosition = 0;
 
   constructor() {
     this.SAXParser = SAXParser;
@@ -462,10 +462,10 @@ export class SAX implements SAXInterface {
       local = '';
     }
 
-    return {prefix: prefix, local: local};
+    return {prefix, local};
   }
 
-  public write(chunk: null | object | string) {
+  write(chunk: null | object | string) {
     if (this.error) {
       throw this.error;
     }
@@ -1126,7 +1126,7 @@ export class SAX implements SAXInterface {
   private parseEntity() {
     let entity = this.entity;
     const entityLC = entity.toLowerCase();
-    let num: number = NaN;
+    let num = NaN;
     let numStr = '';
 
     if (this.ENTITIES[entity]) {
@@ -1271,11 +1271,11 @@ export class SAX implements SAXInterface {
         const local = qualName.local;
         const uri = prefix === '' ? '' : (tag.ns[prefix] || '');
         const a = {
-          name: name,
-          value: value,
-          prefix: prefix,
-          local: local,
-          uri: uri,
+          name,
+          value,
+          prefix,
+          local,
+          uri,
         };
 
         // if there's any attributes with an undefined namespace,
@@ -1362,7 +1362,7 @@ export class SAX implements SAXInterface {
       this.emitNode('onclosetag', this.tagName);
 
       const x: { [index: string]: any } = {};
-      for (let i in tag.ns) {
+      for (const i in tag.ns) {
         if (tag.ns.hasOwnProperty(i)) {
           x[i] = tag.ns[i];
         }
@@ -1425,53 +1425,35 @@ export class SAXParser extends SAX {
   }
 
   // TODO: try to make it better
-  ontext: Function = () => {
-  };
-  onprocessinginstruction: Function = () => {
-  };
-  onsgmldeclaration: Function = () => {
-  };
-  ondoctype: Function = () => {
-  };
-  oncomment: Function = () => {
-  };
-  onopentagstart: Function = () => {
-  };
-  onattribute: Function = () => {
-  };
-  onopentag: Function = () => {
-  };
-  onclosetag: Function = () => {
-  };
-  onopencdata: Function = () => {
-  };
-  oncdata: Function = () => {
-  };
-  onclosecdata: Function = () => {
-  };
-  onerror: Function = () => {
-  };
-  onend: Function = () => {
-  };
-  onready: Function = () => {
-  };
-  onscript: Function = () => {
-  };
-  onopennamespace: Function = () => {
-  };
-  onclosenamespace: Function = () => {
-  };
+  ontext: Function = () => {};
+  onprocessinginstruction: Function = () => {};
+  onsgmldeclaration: Function = () => {};
+  ondoctype: Function = () => {};
+  oncomment: Function = () => {};
+  onopentagstart: Function = () => {};
+  onattribute: Function = () => {};
+  onopentag: Function = () => {};
+  onclosetag: Function = () => {};
+  onopencdata: Function = () => {};
+  oncdata: Function = () => {};
+  onclosecdata: Function = () => {};
+  onerror: Function = () => {};
+  onend: Function = () => {};
+  onready: Function = () => {};
+  onscript: Function = () => {};
+  onopennamespace: Function = () => {};
+  onclosenamespace: Function = () => {};
 
-  public resume() {
+  resume() {
     this.error = null;
     return this;
   }
 
-  public close() {
+  close() {
     return this.write(null);
   }
 
-  public flush() {
+  flush() {
     this.flushBuffers();
   }
 }
