@@ -351,7 +351,7 @@ export class SAX implements SAXInterface {
     private doctype: any;
     private procInstName: any;
     private procInstBody: any;
-    private entity: any;
+    private entity: string = '';
     private attribName: any;
     private attribValue: any;
     private cdata: any;

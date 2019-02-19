@@ -9,4 +9,4 @@ parser.EVENTS.forEach(function (ev) {
 });
 
 parser.MAX_BUFFER_LENGTH = 5;
-parser.write('<abcdefghijklmn').write('opqrstuvwxyzABC').write('DEFGHIJKLMNOPQR').write('STUVWXYZ>').write('yo').write('</abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ>').close();
+parser.write('<a>&#x1f525;</a>').close();
