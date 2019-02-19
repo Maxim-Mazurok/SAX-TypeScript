@@ -1,6 +1,6 @@
 import {SAXParser} from './sax2';
 
-let parser = new SAXParser(false, []);
+let parser = new SAXParser(true, []);
 
 parser.EVENTS.forEach(function (ev) {
     parser['on' + ev] = function (n: string) {
@@ -8,4 +8,4 @@ parser.EVENTS.forEach(function (ev) {
     };
 });
 
-parser.write('<root length=\'12345\'></root>');
+parser.write('\uFEFF<P BOM="\uFEFF">\uFEFFStarts and ends with BOM\uFEFF</P>');

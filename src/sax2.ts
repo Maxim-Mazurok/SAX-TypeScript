@@ -1,3 +1,5 @@
+console.log = function() {};
+
 const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
 const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
@@ -345,7 +347,7 @@ export class SAX implements SAXInterface {
     protected rootNS: {} = {xml: this.XML_NAMESPACE, xmlns: this.XMLNS_NAMESPACE};
     private comment: any;
     private sgmlDecl: any;
-    private textNode: any;
+    private textNode: string = '';
     private tagName: any;
     private doctype: any;
     private procInstName: any;
@@ -496,7 +498,9 @@ export class SAX implements SAXInterface {
             switch (this.state) {
                 case this.S.BEGIN:
                     this.state = this.S.BEGIN_WHITESPACE;
+                    console.log('ccccc', c.charCodeAt(0));
                     if (c === '\uFEFF') {
+                        console.log('\uFEFF');
                         continue;
                     }
                     this.beginWhiteSpace(c);
@@ -521,6 +525,7 @@ export class SAX implements SAXInterface {
                                 }
                             }
                         }
+                        console.log('chunk.substring(starti, i - 1)', chunk.substring(starti, i - 1));
                         this.textNode += chunk.substring(starti, i - 1);
                     }
                     if (c === '<' && !(this.sawRoot && this.closedRoot && !this.strict)) {
@@ -533,6 +538,7 @@ export class SAX implements SAXInterface {
                         if (c === '&') {
                             this.state = this.S.TEXT_ENTITY;
                         } else {
+                            console.log('this.textNode += c', c);
                             this.textNode += c;
                         }
                     }
@@ -1155,15 +1161,21 @@ export class SAX implements SAXInterface {
     }
 
     private beginWhiteSpace(c: string) {
+        console.log('beginWhiteSpace', c.charCodeAt(0));
         if (c === '<') {
             this.state = this.S.OPEN_WAKA;
             this.startTagPosition = this.position;
         } else if (!SAX.isWhitespace(c)) {
             // have to process this as a text node.
             // weird, but happens.
+            console.log('strictFail', c.charCodeAt(0));
             this.strictFail('Non-whitespace before first tag.');
+            console.log('this.textNode += c; 2', c);
             this.textNode = c;
             this.state = this.S.TEXT;
+        } else {
+            // //console.log('beginWhiteSpace', JSON.stringify(c));
+            console.log('beginWhiteSpace', c.charCodeAt(0));
         }
     }
 
@@ -1177,6 +1189,7 @@ export class SAX implements SAXInterface {
     }
 
     private textApplyOptions(text: string): string {
+        console.log('textApplyOptions', text);
         if (this.opt.trim) text = text.trim();
         if (this.opt.normalize) text = text.replace(/\s+/g, ' ');
         return text;
@@ -1190,7 +1203,7 @@ export class SAX implements SAXInterface {
     private closeText() {
         this.textNode = this.textApplyOptions(this.textNode);
         //TODO: figure out why this.textNode can be "" and "undefined"
-        if (this.textNode !== '' && this.textNode !== 'undefined') this.emit('ontext', this.textNode);
+        if (this.textNode !== undefined && this.textNode !== '' && this.textNode !== 'undefined') this.emit('ontext', this.textNode);
         this.textNode = '';
     }
 

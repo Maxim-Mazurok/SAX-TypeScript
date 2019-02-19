@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+console.log = function () { };
 const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
 const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
@@ -327,6 +328,7 @@ class SAX {
         this.XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
         this.XMLNS_NAMESPACE = 'http://www.w3.org/2000/xmlns/';
         this.rootNS = { xml: this.XML_NAMESPACE, xmlns: this.XMLNS_NAMESPACE };
+        this.textNode = '';
         this.startTagPosition = 0;
         this.SAXParser = SAXParser;
         this.MAX_BUFFER_LENGTH = 64 * 1024;
@@ -449,7 +451,9 @@ class SAX {
             switch (this.state) {
                 case this.S.BEGIN:
                     this.state = this.S.BEGIN_WHITESPACE;
+                    console.log('ccccc', c.charCodeAt(0));
                     if (c === '\uFEFF') {
+                        console.log('\uFEFF');
                         continue;
                     }
                     this.beginWhiteSpace(c);
@@ -473,6 +477,7 @@ class SAX {
                                 }
                             }
                         }
+                        console.log('chunk.substring(starti, i - 1)', chunk.substring(starti, i - 1));
                         this.textNode += chunk.substring(starti, i - 1);
                     }
                     if (c === '<' && !(this.sawRoot && this.closedRoot && !this.strict)) {
@@ -487,6 +492,7 @@ class SAX {
                             this.state = this.S.TEXT_ENTITY;
                         }
                         else {
+                            console.log('this.textNode += c', c);
                             this.textNode += c;
                         }
                     }
@@ -1121,6 +1127,7 @@ class SAX {
         return '';
     }
     beginWhiteSpace(c) {
+        console.log('beginWhiteSpace', c.charCodeAt(0));
         if (c === '<') {
             this.state = this.S.OPEN_WAKA;
             this.startTagPosition = this.position;
@@ -1128,9 +1135,15 @@ class SAX {
         else if (!SAX.isWhitespace(c)) {
             // have to process this as a text node.
             // weird, but happens.
+            console.log('strictFail', c.charCodeAt(0));
             this.strictFail('Non-whitespace before first tag.');
+            console.log('this.textNode += c; 2', c);
             this.textNode = c;
             this.state = this.S.TEXT;
+        }
+        else {
+            // //console.log('beginWhiteSpace', JSON.stringify(c));
+            console.log('beginWhiteSpace', c.charCodeAt(0));
         }
     }
     strictFail(message) {
@@ -1142,6 +1155,7 @@ class SAX {
         }
     }
     textApplyOptions(text) {
+        console.log('textApplyOptions', text);
         if (this.opt.trim)
             text = text.trim();
         if (this.opt.normalize)
@@ -1156,7 +1170,7 @@ class SAX {
     closeText() {
         this.textNode = this.textApplyOptions(this.textNode);
         //TODO: figure out why this.textNode can be "" and "undefined"
-        if (this.textNode !== '' && this.textNode !== 'undefined')
+        if (this.textNode !== undefined && this.textNode !== '' && this.textNode !== 'undefined')
             this.emit('ontext', this.textNode);
         this.textNode = '';
     }
@@ -1339,42 +1353,24 @@ exports.SAX = SAX;
 class SAXParser extends SAX {
     constructor(strict, opt) {
         super();
-        this.ontext = function () {
-        };
-        this.onprocessinginstruction = function () {
-        };
-        this.onsgmldeclaration = function () {
-        };
-        this.ondoctype = function () {
-        };
-        this.oncomment = function () {
-        };
-        this.onopentagstart = function () {
-        };
-        this.onattribute = function () {
-        };
-        this.onopentag = function () {
-        };
-        this.onclosetag = function () {
-        };
-        this.onopencdata = function () {
-        };
-        this.oncdata = function () {
-        };
-        this.onclosecdata = function () {
-        };
-        this.onerror = function () {
-        };
-        this.onend = function () {
-        };
-        this.onready = function () {
-        };
-        this.onscript = function () {
-        };
-        this.onopennamespace = function () {
-        };
-        this.onclosenamespace = function () {
-        };
+        this.ontext = function () { };
+        this.onprocessinginstruction = function () { };
+        this.onsgmldeclaration = function () { };
+        this.ondoctype = function () { };
+        this.oncomment = function () { };
+        this.onopentagstart = function () { };
+        this.onattribute = function () { };
+        this.onopentag = function () { };
+        this.onclosetag = function () { };
+        this.onopencdata = function () { };
+        this.oncdata = function () { };
+        this.onclosecdata = function () { };
+        this.onerror = function () { };
+        this.onend = function () { };
+        this.onready = function () { };
+        this.onscript = function () { };
+        this.onopennamespace = function () { };
+        this.onclosenamespace = function () { };
         if (!(this instanceof SAXParser)) {
             return new SAXParser(strict, opt);
         }
