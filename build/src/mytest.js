@@ -4,9 +4,11 @@ const sax2_1 = require("./sax2");
 let parser = new sax2_1.SAXParser(false, []);
 parser.EVENTS.forEach(function (ev) {
     parser['on' + ev] = function (n) {
-        console.log(ev, n);
+        console.error(ev, n)
     };
 });
-parser.MAX_BUFFER_LENGTH = 5;
-parser.write('<a>&#x1f525;</a>').close()
+parser.write('<T>flush')
+parser.flush()
+parser.write('rest</T>')
+parser.close()
 //# sourceMappingURL=mytest.js.map
