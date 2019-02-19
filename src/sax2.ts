@@ -1126,9 +1126,11 @@ export class SAX implements SAXInterface {
     private parseEntity() {
         let entity = this.entity;
         const entityLC = entity.toLowerCase();
-        let num: number;
+        let num: number = NaN;
         let numStr = '';
 
+        console.log(entity, this.ENTITIES[entity]);
+        console.log(entityLC, this.ENTITIES[entityLC]);
         if (this.ENTITIES[entity]) {
             return this.ENTITIES[entity];
         }
@@ -1146,17 +1148,15 @@ export class SAX implements SAXInterface {
                 num = parseInt(entity, 10);
                 numStr = num.toString(10);
             }
-
-            entity = entity.replace(/^0+/, '');
-            if (isNaN(num) || numStr.toLowerCase() !== entity) {
-                this.strictFail('Invalid character entity');
-                return '&' + this.entity + ';';
-            }
-
-            return String.fromCodePoint(num);
         }
 
-        return '';
+        entity = entity.replace(/^0+/, '');
+        if (isNaN(num) || numStr.toLowerCase() !== entity) {
+            this.strictFail('Invalid character entity');
+            return '&' + this.entity + ';';
+        }
+
+        return String.fromCodePoint(num);
     }
 
     private beginWhiteSpace(c: string) {
@@ -1406,7 +1406,7 @@ export class SAXParser extends SAX {
         this.q = this.c = '';
         this.opt = {MAX_BUFFER_LENGTH: 64 * 1024, ...opt};
         this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
-        this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags;
+        this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags || false;
         this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
         this.tags = [];
         this.closed = this.closedRoot = this.sawRoot = false;
@@ -1414,6 +1414,7 @@ export class SAXParser extends SAX {
         this.strict = !!strict;
         this.noscript = !!(strict || this.opt.noscript);
         this.state = this.S.BEGIN;
+        console.log('this.opt', this.opt);
         this.strictEntities = this.opt.strictEntities;
         this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
         this.attribList = [];

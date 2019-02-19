@@ -1,6 +1,8 @@
 import {SAXParser} from './sax2';
 
-let parser = new SAXParser(false, []);
+let parser = new SAXParser(false, {
+    strictEntities: true,
+});
 
 parser.EVENTS.forEach(function (ev) {
     parser['on' + ev] = function (n: string) {
@@ -8,7 +10,7 @@ parser.EVENTS.forEach(function (ev) {
     };
 });
 
-parser.write('<T>flush');
-parser.flush();
-parser.write('rest</T>');
+parser.write('<r>&rfloor; ' +
+    '&spades; &copy; &rarr; &amp; ' +
+    '&lt; < <  <   < &gt; &real; &weierp; &euro;</r>');
 parser.close();

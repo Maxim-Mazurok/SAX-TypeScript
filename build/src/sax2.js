@@ -1,6 +1,6 @@
 "use strict";
-//console.log = console.warn = function() {}; // TODO: remove all console's after tests fixed
 Object.defineProperty(exports, "__esModule", { value: true });
+console.log = console.warn = function () { } // TODO: remove all console's after tests fixed
 const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
 const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
@@ -1099,8 +1099,10 @@ class SAX {
     parseEntity() {
         let entity = this.entity;
         const entityLC = entity.toLowerCase();
-        let num;
+        let num = NaN
         let numStr = '';
+        console.log(entity, this.ENTITIES[entity])
+        console.log(entityLC, this.ENTITIES[entityLC])
         if (this.ENTITIES[entity]) {
             return this.ENTITIES[entity];
         }
@@ -1119,14 +1121,13 @@ class SAX {
                 num = parseInt(entity, 10);
                 numStr = num.toString(10);
             }
-            entity = entity.replace(/^0+/, '');
-            if (isNaN(num) || numStr.toLowerCase() !== entity) {
-                this.strictFail('Invalid character entity');
-                return '&' + this.entity + ';';
-            }
-            return String.fromCodePoint(num);
         }
-        return '';
+        entity = entity.replace(/^0+/, '')
+        if (isNaN(num) || numStr.toLowerCase() !== entity) {
+            this.strictFail('Invalid character entity')
+            return '&' + this.entity + ';'
+        }
+        return String.fromCodePoint(num)
     }
     beginWhiteSpace(c) {
         console.log('beginWhiteSpace', c.charCodeAt(0));
@@ -1381,7 +1382,8 @@ class SAXParser extends SAX {
         this.q = this.c = '';
         this.opt = Object.assign({ MAX_BUFFER_LENGTH: 64 * 1024 }, opt);
         this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
-        this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags;
+        this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags ||
+          false
         this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
         this.tags = [];
         this.closed = this.closedRoot = this.sawRoot = false;
@@ -1389,6 +1391,7 @@ class SAXParser extends SAX {
         this.strict = !!strict;
         this.noscript = !!(strict || this.opt.noscript);
         this.state = this.S.BEGIN;
+        console.log('this.opt', this.opt)
         this.strictEntities = this.opt.strictEntities;
         this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
         this.attribList = [];
