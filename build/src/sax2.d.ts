@@ -3,6 +3,7 @@ interface SAXInterface {
 }
 export declare class SAX implements SAXInterface {
     [key: string]: any;
+    EVENTS: string[];
     protected MAX_BUFFER_LENGTH: number;
     protected XML_ENTITIES: {
         [key: string]: string;
@@ -35,7 +36,6 @@ export declare class SAX implements SAXInterface {
     private STATE;
     private SAXParser;
     private readonly BUFFERS;
-    EVENTS: string[];
     private parser;
     private CDATA;
     private DOCTYPE;
@@ -68,15 +68,15 @@ export declare class SAX implements SAXInterface {
     protected clearBuffers(): void;
     protected flushBuffers(): void;
     protected end(): this;
+    protected errorFunction(er: string): this;
     private attrib;
     private newTag;
     private parseEntity;
     private beginWhiteSpace;
     private strictFail;
-    private textopts;
+    private textApplyOptions;
     private emitNode;
     private closeText;
-    protected errorFunction(er: string): this;
     private checkBufferLength;
     private openTag;
     private closeTag;

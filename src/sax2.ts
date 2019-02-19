@@ -10,6 +10,7 @@ interface SAXInterface {
 export class SAX implements SAXInterface {
     [key: string]: any;
 
+    public EVENTS: string[];
     protected MAX_BUFFER_LENGTH: number;
     protected XML_ENTITIES: { [key: string]: string } = {
         'amp': '&',
@@ -19,6 +20,7 @@ export class SAX implements SAXInterface {
         'apos': '\'',
     };
     protected ENTITIES: { [key: string]: number | string } = {
+        // amp, gt, lt, quot and apos are resolved to strings instead of numerical codes, IDK why
         'amp': '&',
         'gt': '>',
         'lt': '<',
@@ -335,7 +337,6 @@ export class SAX implements SAXInterface {
     };
     private SAXParser: any;
     private readonly BUFFERS: string[];
-    public EVENTS: string[];
     private parser: (strict: boolean, opt: any) => SAXParser;
     private CDATA: string = '[CDATA[';
     private DOCTYPE: string = 'DOCTYPE';
@@ -673,7 +674,7 @@ export class SAX implements SAXInterface {
                 case this.S.COMMENT_ENDING:
                     if (c === '-') {
                         this.state = this.S.COMMENT_ENDED;
-                        this.comment = this.textopts(this.comment);
+                        this.comment = this.textApplyOptions(this.comment);
                         if (this.comment) {
                             this.emitNode('oncomment', this.comment);
                         }
@@ -1041,6 +1042,19 @@ export class SAX implements SAXInterface {
         return this;
     }
 
+    protected errorFunction(er: string) {
+        this.closeText();
+        if (this.trackPosition) {
+            er += '\nLine: ' + this.line +
+                '\nColumn: ' + this.column +
+                '\nChar: ' + this.c;
+        }
+        const error = new Error(er);
+        this.error = error;
+        this.emit('onerror', error);
+        return this;
+    }
+
     private attrib() {
         if (!this.strict) {
             this.attribName = this.attribName[this.looseCase]();
@@ -1162,7 +1176,7 @@ export class SAX implements SAXInterface {
         }
     }
 
-    private textopts(text: string) {
+    private textApplyOptions(text: string): string {
         if (this.opt.trim) text = text.trim();
         if (this.opt.normalize) text = text.replace(/\s+/g, ' ');
         return text;
@@ -1174,22 +1188,10 @@ export class SAX implements SAXInterface {
     }
 
     private closeText() {
-        this.textNode = this.textopts(this.textNode);
-        if (this.textNode) this.emit('ontext', this.textNode);
+        this.textNode = this.textApplyOptions(this.textNode);
+        //TODO: figure out why this.textNode can be "" and "undefined"
+        if (this.textNode !== '' && this.textNode !== 'undefined') this.emit('ontext', this.textNode);
         this.textNode = '';
-    }
-
-    protected errorFunction(er: string) {
-        this.closeText();
-        if (this.trackPosition) {
-            er += '\nLine: ' + this.line +
-                '\nColumn: ' + this.column +
-                '\nChar: ' + this.c;
-        }
-        const error = new Error(er);
-        this.error = error;
-        this.emit('onerror', error);
-        return this;
     }
 
     private checkBufferLength() {

@@ -14,6 +14,7 @@ class SAX {
             'apos': '\'',
         };
         this.ENTITIES = {
+            // amp, gt, lt, quot and apos are resolved to strings instead of numerical codes, IDK why
             'amp': '&',
             'gt': '>',
             'lt': '<',
@@ -632,7 +633,7 @@ class SAX {
                 case this.S.COMMENT_ENDING:
                     if (c === '-') {
                         this.state = this.S.COMMENT_ENDED;
-                        this.comment = this.textopts(this.comment);
+                        this.comment = this.textApplyOptions(this.comment);
                         if (this.comment) {
                             this.emitNode('oncomment', this.comment);
                         }
@@ -1016,6 +1017,18 @@ class SAX {
         new SAXParser(this.strict, this.opt);
         return this;
     }
+    errorFunction(er) {
+        this.closeText();
+        if (this.trackPosition) {
+            er += '\nLine: ' + this.line +
+                '\nColumn: ' + this.column +
+                '\nChar: ' + this.c;
+        }
+        const error = new Error(er);
+        this.error = error;
+        this.emit('onerror', error);
+        return this;
+    }
     attrib() {
         if (!this.strict) {
             this.attribName = this.attribName[this.looseCase]();
@@ -1128,7 +1141,7 @@ class SAX {
             this.errorFunction(message);
         }
     }
-    textopts(text) {
+    textApplyOptions(text) {
         if (this.opt.trim)
             text = text.trim();
         if (this.opt.normalize)
@@ -1141,22 +1154,11 @@ class SAX {
         this.emit(nodeType, data);
     }
     closeText() {
-        this.textNode = this.textopts(this.textNode);
-        if (this.textNode)
+        this.textNode = this.textApplyOptions(this.textNode);
+        //TODO: figure out why this.textNode can be "" and "undefined"
+        if (this.textNode !== '' && this.textNode !== 'undefined')
             this.emit('ontext', this.textNode);
         this.textNode = '';
-    }
-    errorFunction(er) {
-        this.closeText();
-        if (this.trackPosition) {
-            er += '\nLine: ' + this.line +
-                '\nColumn: ' + this.column +
-                '\nChar: ' + this.c;
-        }
-        const error = new Error(er);
-        this.error = error;
-        this.emit('onerror', error);
-        return this;
     }
     checkBufferLength() {
         const maxAllowed = Math.max(this.MAX_BUFFER_LENGTH, 10);
@@ -1337,24 +1339,42 @@ exports.SAX = SAX;
 class SAXParser extends SAX {
     constructor(strict, opt) {
         super();
-        this.ontext = function () { };
-        this.onprocessinginstruction = function () { };
-        this.onsgmldeclaration = function () { };
-        this.ondoctype = function () { };
-        this.oncomment = function () { };
-        this.onopentagstart = function () { };
-        this.onattribute = function () { };
-        this.onopentag = function () { };
-        this.onclosetag = function () { };
-        this.onopencdata = function () { };
-        this.oncdata = function () { };
-        this.onclosecdata = function () { };
-        this.onerror = function () { };
-        this.onend = function () { };
-        this.onready = function () { };
-        this.onscript = function () { };
-        this.onopennamespace = function () { };
-        this.onclosenamespace = function () { };
+        this.ontext = function () {
+        };
+        this.onprocessinginstruction = function () {
+        };
+        this.onsgmldeclaration = function () {
+        };
+        this.ondoctype = function () {
+        };
+        this.oncomment = function () {
+        };
+        this.onopentagstart = function () {
+        };
+        this.onattribute = function () {
+        };
+        this.onopentag = function () {
+        };
+        this.onclosetag = function () {
+        };
+        this.onopencdata = function () {
+        };
+        this.oncdata = function () {
+        };
+        this.onclosecdata = function () {
+        };
+        this.onerror = function () {
+        };
+        this.onend = function () {
+        };
+        this.onready = function () {
+        };
+        this.onscript = function () {
+        };
+        this.onopennamespace = function () {
+        };
+        this.onclosenamespace = function () {
+        };
         if (!(this instanceof SAXParser)) {
             return new SAXParser(strict, opt);
         }
