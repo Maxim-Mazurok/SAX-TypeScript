@@ -263,1166 +263,1166 @@ Object.keys(ENTITIES).forEach(function (key) {
 });
 
 interface SAXInterface {
-    [key: string]: any
+  [key: string]: any
 }
 
 export class SAX implements SAXInterface {
-    [key: string]: any;
+  [key: string]: any;
 
-    public EVENTS: string[];
+  public EVENTS: string[];
   public ENTITIES: { [key: string]: number | string } = { // TODO: make it readonly, needed for entity-mega test
     // amp, gt, lt, quot and apos are resolved to strings instead of numerical codes, IDK why
     ...ENTITIES,
   };
-    protected XML_ENTITIES: { [key: string]: string } = {
-        'amp': '&',
-        'gt': '>',
-        'lt': '<',
-        'quot': '"',
-        'apos': '\'',
+  protected XML_ENTITIES: { [key: string]: string } = {
+    'amp': '&',
+    'gt': '>',
+    'lt': '<',
+    'quot': '"',
+    'apos': '\'',
+  };
+  protected S: any = 0;
+  protected opt: any;
+  protected trackPosition: boolean = false;
+  protected column: number = 0;
+  protected line: number = 0;
+  protected c: string = '';
+  protected error: any;
+  protected q: string = '';
+  protected bufferCheckPosition: any;
+  protected closed: boolean = false;
+  protected tags: any[] = [];
+  protected looseCase: string = '';
+  protected closedRoot: boolean = false;
+  protected sawRoot: boolean = false;
+  protected strict: boolean = false;
+  protected tag: any;
+  protected strictEntities: any;
+  protected state: any;
+  protected noscript: boolean = false;
+  protected attribList: any[] = [];
+  protected ns: any;
+  protected position: number = 0;
+  private STATE: { [index: string]: any } = {
+    BEGIN: this.S++, // leading byte order mark or whitespace
+    BEGIN_WHITESPACE: this.S++, // leading whitespace
+    TEXT: this.S++, // general stuff
+    TEXT_ENTITY: this.S++, // &amp and such.
+    OPEN_WAKA: this.S++, // <
+    SGML_DECL: this.S++, // <!BLARG
+    SGML_DECL_QUOTED: this.S++, // <!BLARG foo "bar
+    DOCTYPE: this.S++, // <!DOCTYPE
+    DOCTYPE_QUOTED: this.S++, // <!DOCTYPE "//blah
+    DOCTYPE_DTD: this.S++, // <!DOCTYPE "//blah" [ ...
+    DOCTYPE_DTD_QUOTED: this.S++, // <!DOCTYPE "//blah" [ "foo
+    COMMENT_STARTING: this.S++, // <!-
+    COMMENT: this.S++, // <!--
+    COMMENT_ENDING: this.S++, // <!-- blah -
+    COMMENT_ENDED: this.S++, // <!-- blah --
+    CDATA: this.S++, // <![CDATA[ something
+    CDATA_ENDING: this.S++, // ]
+    CDATA_ENDING_2: this.S++, // ]]
+    PROC_INST: this.S++, // <?hi
+    PROC_INST_BODY: this.S++, // <?hi there
+    PROC_INST_ENDING: this.S++, // <?hi "there" ?
+    OPEN_TAG: this.S++, // <strong
+    OPEN_TAG_SLASH: this.S++, // <strong /
+    ATTRIB: this.S++, // <a
+    ATTRIB_NAME: this.S++, // <a foo
+    ATTRIB_NAME_SAW_WHITE: this.S++, // <a foo _
+    ATTRIB_VALUE: this.S++, // <a foo=
+    ATTRIB_VALUE_QUOTED: this.S++, // <a foo="bar
+    ATTRIB_VALUE_CLOSED: this.S++, // <a foo="bar"
+    ATTRIB_VALUE_UNQUOTED: this.S++, // <a foo=bar
+    ATTRIB_VALUE_ENTITY_Q: this.S++, // <foo bar="&quot;"
+    ATTRIB_VALUE_ENTITY_U: this.S++, // <foo bar=&quot
+    CLOSE_TAG: this.S++, // </a
+    CLOSE_TAG_SAW_WHITE: this.S++, // </a   >
+    SCRIPT: this.S++, // <script> ...
+    SCRIPT_ENDING: this.S++, // <script> ... <
+  };
+  private SAXParser: any;
+  private readonly BUFFERS: string[];
+  private parser: (strict: boolean, opt: any) => SAXParser;
+  private CDATA: string = '[CDATA[';
+  private DOCTYPE: string = 'DOCTYPE';
+  private XML_NAMESPACE: string = 'http://www.w3.org/XML/1998/namespace';
+  private XMLNS_NAMESPACE: string = 'http://www.w3.org/2000/xmlns/';
+  protected rootNS: {} = {xml: this.XML_NAMESPACE, xmlns: this.XMLNS_NAMESPACE};
+  private comment: any;
+  private sgmlDecl: any;
+  private textNode: string = '';
+  private tagName: any;
+  private doctype: any;
+  private procInstName: any;
+  private procInstBody: any;
+  private entity: string = '';
+  private attribName: any;
+  private attribValue: any;
+  private cdata: string = '';
+  private script: string = '';
+  private startTagPosition: number = 0;
+
+  constructor() {
+    this.SAXParser = SAXParser;
+    this.BUFFERS = [
+      'comment',
+      'sgmlDecl',
+      'textNode',
+      'tagName',
+      'doctype',
+      'procInstName',
+      'procInstBody',
+      'entity',
+      'attribName',
+      'attribValue',
+      'cdata',
+      'script',
+    ];
+    this.EVENTS = [
+      'text',
+      'processinginstruction',
+      'sgmldeclaration',
+      'doctype',
+      'comment',
+      'opentagstart',
+      'attribute',
+      'opentag',
+      'closetag',
+      'opencdata',
+      'cdata',
+      'closecdata',
+      'error',
+      'end',
+      'ready',
+      'script',
+      'opennamespace',
+      'closenamespace',
+    ];
+
+    this.S = 0;
+
+    const that = this;
+    Object.keys(this.ENTITIES).forEach(function (key) {
+      const e = that.ENTITIES[key];
+      that.ENTITIES[key] = typeof e === 'number' ? String.fromCharCode(e) : e;
+    });
+
+    for (const s in this.STATE) {
+      if (this.STATE.hasOwnProperty(s)) {
+        this.STATE[this.STATE[s]] = s;
+      }
+    }
+
+    // shorthand
+    this.S = this.STATE;
+
+    this.parser = function (strict, opt) {
+      return new SAXParser(strict, opt);
     };
-    protected S: any = 0;
-    protected opt: any;
-    protected trackPosition: boolean = false;
-    protected column: number = 0;
-    protected line: number = 0;
-    protected c: string = '';
-    protected error: any;
-    protected q: string = '';
-    protected bufferCheckPosition: any;
-    protected closed: boolean = false;
-    protected tags: any[] = [];
-    protected looseCase: string = '';
-    protected closedRoot: boolean = false;
-    protected sawRoot: boolean = false;
-    protected strict: boolean = false;
-    protected tag: any;
-    protected strictEntities: any;
-    protected state: any;
-    protected noscript: boolean = false;
-    protected attribList: any[] = [];
-    protected ns: any;
-    protected position: number = 0;
-    private STATE: { [index: string]: any } = {
-        BEGIN: this.S++, // leading byte order mark or whitespace
-        BEGIN_WHITESPACE: this.S++, // leading whitespace
-        TEXT: this.S++, // general stuff
-        TEXT_ENTITY: this.S++, // &amp and such.
-        OPEN_WAKA: this.S++, // <
-        SGML_DECL: this.S++, // <!BLARG
-        SGML_DECL_QUOTED: this.S++, // <!BLARG foo "bar
-        DOCTYPE: this.S++, // <!DOCTYPE
-        DOCTYPE_QUOTED: this.S++, // <!DOCTYPE "//blah
-        DOCTYPE_DTD: this.S++, // <!DOCTYPE "//blah" [ ...
-        DOCTYPE_DTD_QUOTED: this.S++, // <!DOCTYPE "//blah" [ "foo
-        COMMENT_STARTING: this.S++, // <!-
-        COMMENT: this.S++, // <!--
-        COMMENT_ENDING: this.S++, // <!-- blah -
-        COMMENT_ENDED: this.S++, // <!-- blah --
-        CDATA: this.S++, // <![CDATA[ something
-        CDATA_ENDING: this.S++, // ]
-        CDATA_ENDING_2: this.S++, // ]]
-        PROC_INST: this.S++, // <?hi
-        PROC_INST_BODY: this.S++, // <?hi there
-        PROC_INST_ENDING: this.S++, // <?hi "there" ?
-        OPEN_TAG: this.S++, // <strong
-        OPEN_TAG_SLASH: this.S++, // <strong /
-        ATTRIB: this.S++, // <a
-        ATTRIB_NAME: this.S++, // <a foo
-        ATTRIB_NAME_SAW_WHITE: this.S++, // <a foo _
-        ATTRIB_VALUE: this.S++, // <a foo=
-        ATTRIB_VALUE_QUOTED: this.S++, // <a foo="bar
-        ATTRIB_VALUE_CLOSED: this.S++, // <a foo="bar"
-        ATTRIB_VALUE_UNQUOTED: this.S++, // <a foo=bar
-        ATTRIB_VALUE_ENTITY_Q: this.S++, // <foo bar="&quot;"
-        ATTRIB_VALUE_ENTITY_U: this.S++, // <foo bar=&quot
-        CLOSE_TAG: this.S++, // </a
-        CLOSE_TAG_SAW_WHITE: this.S++, // </a   >
-        SCRIPT: this.S++, // <script> ...
-        SCRIPT_ENDING: this.S++, // <script> ... <
-    };
-    private SAXParser: any;
-    private readonly BUFFERS: string[];
-    private parser: (strict: boolean, opt: any) => SAXParser;
-    private CDATA: string = '[CDATA[';
-    private DOCTYPE: string = 'DOCTYPE';
-    private XML_NAMESPACE: string = 'http://www.w3.org/XML/1998/namespace';
-    private XMLNS_NAMESPACE: string = 'http://www.w3.org/2000/xmlns/';
-    protected rootNS: {} = {xml: this.XML_NAMESPACE, xmlns: this.XMLNS_NAMESPACE};
-    private comment: any;
-    private sgmlDecl: any;
-    private textNode: string = '';
-    private tagName: any;
-    private doctype: any;
-    private procInstName: any;
-    private procInstBody: any;
-    private entity: string = '';
-    private attribName: any;
-    private attribValue: any;
-    private cdata: string = '';
-    private script: string = '';
-    private startTagPosition: number = 0;
+  }
 
-    constructor() {
-        this.SAXParser = SAXParser;
-        this.BUFFERS = [
-            'comment',
-            'sgmlDecl',
-            'textNode',
-            'tagName',
-            'doctype',
-            'procInstName',
-            'procInstBody',
-            'entity',
-            'attribName',
-            'attribValue',
-            'cdata',
-            'script',
-        ];
-        this.EVENTS = [
-            'text',
-            'processinginstruction',
-            'sgmldeclaration',
-            'doctype',
-            'comment',
-            'opentagstart',
-            'attribute',
-            'opentag',
-            'closetag',
-            'opencdata',
-            'cdata',
-            'closecdata',
-            'error',
-            'end',
-            'ready',
-            'script',
-            'opennamespace',
-            'closenamespace',
-        ];
+  private static charAt(chunk: string, i: number) {
+    let result = '';
+    if (i < chunk.length) {
+      result = chunk.charAt(i);
+    }
+    return result;
+  }
 
-        this.S = 0;
+  private static isWhitespace(c: string) {
+    return c === ' ' || c === '\n' || c === '\r' || c === '\t';
+  }
 
-        const that = this;
-        Object.keys(this.ENTITIES).forEach(function (key) {
-            const e = that.ENTITIES[key];
-            that.ENTITIES[key] = typeof e === 'number' ? String.fromCharCode(e) : e;
-        });
+  private static isQuote(c: string) {
+    return c === '"' || c === '\'';
+  }
 
-        for (const s in this.STATE) {
-            if (this.STATE.hasOwnProperty(s)) {
-                this.STATE[this.STATE[s]] = s;
-            }
+  private static isAttribEnd(c: string) {
+    return c === '>' || SAX.isWhitespace(c);
+  }
+
+  private static isMatch(regex: RegExp, c: string) {
+    return regex.test(c);
+  }
+
+  private static notMatch(regex: RegExp, c: string) {
+    return !SAX.isMatch(regex, c);
+  }
+
+  private static qname(name: string, attribute?: string | boolean) {
+    const i = name.indexOf(':');
+    const qualName = i < 0 ? ['', name] : name.split(':');
+    let prefix = qualName[0];
+    let local = qualName[1];
+
+    // <x "xmlns"="http://foo">
+    if (attribute && name === 'xmlns') {
+      prefix = 'xmlns';
+      local = '';
+    }
+
+    return {prefix: prefix, local: local};
+  }
+
+  public write(chunk: null | object | string) {
+    if (this.error) {
+      throw this.error;
+    }
+    if (this.closed) {
+      return this.errorFunction('Cannot write after close. Assign an onready handler.');
+    }
+    if (chunk === null) {
+      return this.end();
+    }
+    if (typeof chunk === 'object') {
+      chunk = chunk.toString();
+    }
+    let i = 0;
+    let c: string;
+    while (true) {
+      c = SAX.charAt(chunk, i++);
+      this.c = c;
+
+      if (!c) {
+        break;
+      }
+
+      if (this.trackPosition) {
+        this.position++;
+        if (c === '\n') {
+          this.line++;
+          this.column = 0;
+        } else {
+          this.column++;
         }
+      }
 
-        // shorthand
-        this.S = this.STATE;
+      switch (this.state) {
+        case this.S.BEGIN:
+          this.state = this.S.BEGIN_WHITESPACE;
+          if (c === '\uFEFF') {
+            continue;
+          }
+          this.beginWhiteSpace(c);
+          continue;
 
-        this.parser = function (strict, opt) {
-            return new SAXParser(strict, opt);
-        };
-    }
+        case this.S.BEGIN_WHITESPACE:
+          this.beginWhiteSpace(c);
+          continue;
 
-    private static charAt(chunk: string, i: number) {
-        let result = '';
-        if (i < chunk.length) {
-            result = chunk.charAt(i);
-        }
-        return result;
-    }
-
-    private static isWhitespace(c: string) {
-        return c === ' ' || c === '\n' || c === '\r' || c === '\t';
-    }
-
-    private static isQuote(c: string) {
-        return c === '"' || c === '\'';
-    }
-
-    private static isAttribEnd(c: string) {
-        return c === '>' || SAX.isWhitespace(c);
-    }
-
-    private static isMatch(regex: RegExp, c: string) {
-        return regex.test(c);
-    }
-
-    private static notMatch(regex: RegExp, c: string) {
-        return !SAX.isMatch(regex, c);
-    }
-
-    private static qname(name: string, attribute?: string | boolean) {
-        const i = name.indexOf(':');
-        const qualName = i < 0 ? ['', name] : name.split(':');
-        let prefix = qualName[0];
-        let local = qualName[1];
-
-        // <x "xmlns"="http://foo">
-        if (attribute && name === 'xmlns') {
-            prefix = 'xmlns';
-            local = '';
-        }
-
-        return {prefix: prefix, local: local};
-    }
-
-    public write(chunk: null | object | string) {
-        if (this.error) {
-            throw this.error;
-        }
-        if (this.closed) {
-            return this.errorFunction('Cannot write after close. Assign an onready handler.');
-        }
-        if (chunk === null) {
-            return this.end();
-        }
-        if (typeof chunk === 'object') {
-            chunk = chunk.toString();
-        }
-        let i = 0;
-        let c: string;
-        while (true) {
-            c = SAX.charAt(chunk, i++);
-            this.c = c;
-
-            if (!c) {
-                break;
-            }
-
-            if (this.trackPosition) {
+        case this.S.TEXT:
+          if (this.sawRoot && !this.closedRoot) {
+            const starti = i - 1;
+            while (c && c !== '<' && c !== '&') {
+              c = SAX.charAt(chunk, i++);
+              if (c && this.trackPosition) {
                 this.position++;
                 if (c === '\n') {
-                    this.line++;
-                    this.column = 0;
+                  this.line++;
+                  this.column = 0;
                 } else {
-                    this.column++;
+                  this.column++;
                 }
+              }
             }
-
-            switch (this.state) {
-                case this.S.BEGIN:
-                    this.state = this.S.BEGIN_WHITESPACE;
-                    if (c === '\uFEFF') {
-                        continue;
-                    }
-                    this.beginWhiteSpace(c);
-                    continue;
-
-                case this.S.BEGIN_WHITESPACE:
-                    this.beginWhiteSpace(c);
-                    continue;
-
-                case this.S.TEXT:
-                    if (this.sawRoot && !this.closedRoot) {
-                        const starti = i - 1;
-                        while (c && c !== '<' && c !== '&') {
-                            c = SAX.charAt(chunk, i++);
-                            if (c && this.trackPosition) {
-                                this.position++;
-                                if (c === '\n') {
-                                    this.line++;
-                                    this.column = 0;
-                                } else {
-                                    this.column++;
-                                }
-                            }
-                        }
-                        this.textNode += chunk.substring(starti, i - 1);
-                    }
-                    if (c === '<' && !(this.sawRoot && this.closedRoot && !this.strict)) {
-                        this.state = this.S.OPEN_WAKA;
-                        this.startTagPosition = this.position;
-                    } else {
-                        if (!SAX.isWhitespace(c) && (!this.sawRoot || this.closedRoot)) {
-                            this.strictFail('Text data outside of root node.');
-                        }
-                        if (c === '&') {
-                            this.state = this.S.TEXT_ENTITY;
-                        } else {
-                            this.textNode += c;
-                        }
-                    }
-                    continue;
-
-                case this.S.SCRIPT:
-                    // only non-strict
-                    if (c === '<') {
-                        this.state = this.S.SCRIPT_ENDING;
-                    } else {
-                        this.script += c;
-                    }
-                    continue;
-
-                case this.S.SCRIPT_ENDING:
-                    if (c === '/') {
-                        this.state = this.S.CLOSE_TAG;
-                    } else {
-                        this.script += '<' + c;
-                        this.state = this.S.SCRIPT;
-                    }
-                    continue;
-
-                case this.S.OPEN_WAKA:
-                    // either a /, ?, !, or text is coming next.
-                    if (c === '!') {
-                        this.state = this.S.SGML_DECL;
-                        this.sgmlDecl = '';
-                    } else if (SAX.isWhitespace(c)) {
-                        // wait for it...
-                    } else if (SAX.isMatch(nameStart, c)) {
-                        this.state = this.S.OPEN_TAG;
-                        this.tagName = c;
-                    } else if (c === '/') {
-                        this.state = this.S.CLOSE_TAG;
-                        this.tagName = '';
-                    } else if (c === '?') {
-                        this.state = this.S.PROC_INST;
-                        this.procInstName = this.procInstBody = '';
-                    } else {
-                        this.strictFail('Unencoded <');
-                        // if there was some whitespace, then add that in.
-                        if (this.startTagPosition + 1 < this.position) {
-                            const pad = this.position - this.startTagPosition;
-                            c = new Array(pad).join(' ') + c;
-                        }
-                        this.textNode += '<' + c;
-                        this.state = this.S.TEXT;
-                    }
-                    continue;
-
-                case this.S.SGML_DECL:
-                    if ((this.sgmlDecl + c).toUpperCase() === this.CDATA) {
-                        this.emitNode('onopencdata');
-                        this.state = this.S.CDATA;
-                        this.sgmlDecl = '';
-                        this.cdata = '';
-                    } else if (this.sgmlDecl + c === '--') {
-                        this.state = this.S.COMMENT;
-                        this.comment = '';
-                        this.sgmlDecl = '';
-                    } else if ((this.sgmlDecl + c).toUpperCase() === this.DOCTYPE) {
-                        this.state = this.S.DOCTYPE;
-                        if (this.doctype || this.sawRoot) {
-                            this.strictFail('Inappropriately located doctype declaration');
-                        }
-                        this.doctype = '';
-                        this.sgmlDecl = '';
-                    } else if (c === '>') {
-                        this.emitNode('onsgmldeclaration', this.sgmlDecl);
-                        this.sgmlDecl = '';
-                        this.state = this.S.TEXT;
-                    } else if (SAX.isQuote(c)) {
-                        this.state = this.S.SGML_DECL_QUOTED;
-                        this.sgmlDecl += c;
-                    } else {
-                        this.sgmlDecl += c;
-                    }
-                    continue;
-
-                case this.S.SGML_DECL_QUOTED:
-                    if (c === this.q) {
-                        this.state = this.S.SGML_DECL;
-                        this.q = '';
-                    }
-                    this.sgmlDecl += c;
-                    continue;
-
-                case this.S.DOCTYPE:
-                    if (c === '>') {
-                        this.state = this.S.TEXT;
-                        this.emitNode('ondoctype', this.doctype);
-                        this.doctype = true; // just remember that we saw it.
-                    } else {
-                        this.doctype += c;
-                        if (c === '[') {
-                            this.state = this.S.DOCTYPE_DTD;
-                        } else if (SAX.isQuote(c)) {
-                            this.state = this.S.DOCTYPE_QUOTED;
-                            this.q = c;
-                        }
-                    }
-                    continue;
-
-                case this.S.DOCTYPE_QUOTED:
-                    this.doctype += c;
-                    if (c === this.q) {
-                        this.q = '';
-                        this.state = this.S.DOCTYPE;
-                    }
-                    continue;
-
-                case this.S.DOCTYPE_DTD:
-                    this.doctype += c;
-                    if (c === ']') {
-                        this.state = this.S.DOCTYPE;
-                    } else if (SAX.isQuote(c)) {
-                        this.state = this.S.DOCTYPE_DTD_QUOTED;
-                        this.q = c;
-                    }
-                    continue;
-
-                case this.S.DOCTYPE_DTD_QUOTED:
-                    this.doctype += c;
-                    if (c === this.q) {
-                        this.state = this.S.DOCTYPE_DTD;
-                        this.q = '';
-                    }
-                    continue;
-
-                case this.S.COMMENT:
-                    if (c === '-') {
-                        this.state = this.S.COMMENT_ENDING;
-                    } else {
-                        this.comment += c;
-                    }
-                    continue;
-
-                case this.S.COMMENT_ENDING:
-                    if (c === '-') {
-                        this.state = this.S.COMMENT_ENDED;
-                        this.comment = this.textApplyOptions(this.comment);
-                        if (this.comment) {
-                            this.emitNode('oncomment', this.comment);
-                        }
-                        this.comment = '';
-                    } else {
-                        this.comment += '-' + c;
-                        this.state = this.S.COMMENT;
-                    }
-                    continue;
-
-                case this.S.COMMENT_ENDED:
-                    if (c !== '>') {
-                        this.strictFail('Malformed comment');
-                        // allow <!-- blah -- bloo --> in non-strict mode,
-                        // which is a comment of " blah -- bloo "
-                        this.comment += '--' + c;
-                        this.state = this.S.COMMENT;
-                    } else {
-                        this.state = this.S.TEXT;
-                    }
-                    continue;
-
-                case this.S.CDATA:
-                    if (c === ']') {
-                        this.state = this.S.CDATA_ENDING;
-                    } else {
-                        this.cdata += c;
-                    }
-                    continue;
-
-                case this.S.CDATA_ENDING:
-                    if (c === ']') {
-                        this.state = this.S.CDATA_ENDING_2;
-                    } else {
-                        this.cdata += ']' + c;
-                        this.state = this.S.CDATA;
-                    }
-                    continue;
-
-                case this.S.CDATA_ENDING_2:
-                    if (c === '>') {
-                        if (this.cdata) {
-                            this.emitNode('oncdata', this.cdata);
-                        }
-                        this.emitNode('onclosecdata');
-                        this.cdata = '';
-                        this.state = this.S.TEXT;
-                    } else if (c === ']') {
-                        this.cdata += ']';
-                    } else {
-                        this.cdata += ']]' + c;
-                        this.state = this.S.CDATA;
-                    }
-                    continue;
-
-                case this.S.PROC_INST:
-                    if (c === '?') {
-                        this.state = this.S.PROC_INST_ENDING;
-                    } else if (SAX.isWhitespace(c)) {
-                        this.state = this.S.PROC_INST_BODY;
-                    } else {
-                        this.procInstName += c;
-                    }
-                    continue;
-
-                case this.S.PROC_INST_BODY:
-                    if (!this.procInstBody && SAX.isWhitespace(c)) {
-                        continue;
-                    } else if (c === '?') {
-                        this.state = this.S.PROC_INST_ENDING;
-                    } else {
-                        this.procInstBody += c;
-                    }
-                    continue;
-
-                case this.S.PROC_INST_ENDING:
-                    if (c === '>') {
-                        this.emitNode('onprocessinginstruction', {
-                            name: this.procInstName,
-                            body: this.procInstBody,
-                        });
-                        this.procInstName = this.procInstBody = '';
-                        this.state = this.S.TEXT;
-                    } else {
-                        this.procInstBody += '?' + c;
-                        this.state = this.S.PROC_INST_BODY;
-                    }
-                    continue;
-
-                case this.S.OPEN_TAG:
-                    if (SAX.isMatch(nameBody, c)) {
-                        this.tagName += c;
-                    } else {
-                        this.newTag();
-                        if (c === '>') {
-                            this.openTag();
-                        } else if (c === '/') {
-                            this.state = this.S.OPEN_TAG_SLASH;
-                        } else {
-                            if (!SAX.isWhitespace(c)) {
-                                this.strictFail('Invalid character in tag name');
-                            }
-                            this.state = this.S.ATTRIB;
-                        }
-                    }
-                    continue;
-
-                case this.S.OPEN_TAG_SLASH:
-                    if (c === '>') {
-                        this.openTag(true);
-                        this.closeTag();
-                    } else {
-                        this.strictFail('Forward-slash in opening tag not followed by >');
-                        this.state = this.S.ATTRIB;
-                    }
-                    continue;
-
-                case this.S.ATTRIB:
-                    // haven't read the attribute name yet.
-                    if (SAX.isWhitespace(c)) {
-                        continue;
-                    } else if (c === '>') {
-                        this.openTag();
-                    } else if (c === '/') {
-                        this.state = this.S.OPEN_TAG_SLASH;
-                    } else if (SAX.isMatch(nameStart, c)) {
-                        this.attribName = c;
-                        this.attribValue = '';
-                        this.state = this.S.ATTRIB_NAME;
-                    } else {
-                        this.strictFail('Invalid attribute name');
-                    }
-                    continue;
-
-                case this.S.ATTRIB_NAME:
-                    if (c === '=') {
-                        this.state = this.S.ATTRIB_VALUE;
-                    } else if (c === '>') {
-                        this.strictFail('Attribute without value');
-                        this.attribValue = this.attribName;
-                        this.attrib();
-                        this.openTag();
-                    } else if (SAX.isWhitespace(c)) {
-                        this.state = this.S.ATTRIB_NAME_SAW_WHITE;
-                    } else if (SAX.isMatch(nameBody, c)) {
-                        this.attribName += c;
-                    } else {
-                        this.strictFail('Invalid attribute name');
-                    }
-                    continue;
-
-                case this.S.ATTRIB_NAME_SAW_WHITE:
-                    if (c === '=') {
-                        this.state = this.S.ATTRIB_VALUE;
-                    } else if (SAX.isWhitespace(c)) {
-                        continue;
-                    } else {
-                        this.strictFail('Attribute without value');
-                        this.tag.attributes[this.attribName] = '';
-                        this.attribValue = '';
-                        this.emitNode('onattribute', {
-                            name: this.attribName,
-                            value: '',
-                        });
-                        this.attribName = '';
-                        if (c === '>') {
-                            this.openTag();
-                        } else if (SAX.isMatch(nameStart, c)) {
-                            this.attribName = c;
-                            this.state = this.S.ATTRIB_NAME;
-                        } else {
-                            this.strictFail('Invalid attribute name');
-                            this.state = this.S.ATTRIB;
-                        }
-                    }
-                    continue;
-
-                case this.S.ATTRIB_VALUE:
-                    if (SAX.isWhitespace(c)) {
-                        continue;
-                    } else if (SAX.isQuote(c)) {
-                        this.q = c;
-                        this.state = this.S.ATTRIB_VALUE_QUOTED;
-                    } else {
-                        this.strictFail('Unquoted attribute value');
-                        this.state = this.S.ATTRIB_VALUE_UNQUOTED;
-                        this.attribValue = c;
-                    }
-                    continue;
-
-                case this.S.ATTRIB_VALUE_QUOTED:
-                    if (c !== this.q) {
-                        if (c === '&') {
-                            this.state = this.S.ATTRIB_VALUE_ENTITY_Q;
-                        } else {
-                            this.attribValue += c;
-                        }
-                        continue;
-                    }
-                    this.attrib();
-                    this.q = '';
-                    this.state = this.S.ATTRIB_VALUE_CLOSED;
-                    continue;
-
-                case this.S.ATTRIB_VALUE_CLOSED:
-                    if (SAX.isWhitespace(c)) {
-                        this.state = this.S.ATTRIB;
-                    } else if (c === '>') {
-                        this.openTag();
-                    } else if (c === '/') {
-                        this.state = this.S.OPEN_TAG_SLASH;
-                    } else if (SAX.isMatch(nameStart, c)) {
-                        this.strictFail('No whitespace between attributes');
-                        this.attribName = c;
-                        this.attribValue = '';
-                        this.state = this.S.ATTRIB_NAME;
-                    } else {
-                        this.strictFail('Invalid attribute name');
-                    }
-                    continue;
-
-                case this.S.ATTRIB_VALUE_UNQUOTED:
-                    if (!SAX.isAttribEnd(c)) {
-                        if (c === '&') {
-                            this.state = this.S.ATTRIB_VALUE_ENTITY_U;
-                        } else {
-                            this.attribValue += c;
-                        }
-                        continue;
-                    }
-                    this.attrib();
-                    if (c === '>') {
-                        this.openTag();
-                    } else {
-                        this.state = this.S.ATTRIB;
-                    }
-                    continue;
-
-                case this.S.CLOSE_TAG:
-                    if (!this.tagName) {
-                        if (SAX.isWhitespace(c)) {
-                            continue;
-                        } else if (SAX.notMatch(nameStart, c)) {
-                            if (this.script) {
-                                this.script += '</' + c;
-                                this.state = this.S.SCRIPT;
-                            } else {
-                                this.strictFail('Invalid tagname in closing tag.');
-                            }
-                        } else {
-                            this.tagName = c;
-                        }
-                    } else if (c === '>') {
-                        this.closeTag();
-                    } else if (SAX.isMatch(nameBody, c)) {
-                        this.tagName += c;
-                    } else if (this.script) {
-                        this.script += '</' + this.tagName;
-                        this.tagName = '';
-                        this.state = this.S.SCRIPT;
-                    } else {
-                        if (!SAX.isWhitespace(c)) {
-                            this.strictFail('Invalid tagname in closing tag');
-                        }
-                        this.state = this.S.CLOSE_TAG_SAW_WHITE;
-                    }
-                    continue;
-
-                case this.S.CLOSE_TAG_SAW_WHITE:
-                    if (SAX.isWhitespace(c)) {
-                        continue;
-                    }
-                    if (c === '>') {
-                        this.closeTag();
-                    } else {
-                        this.strictFail('Invalid characters in closing tag');
-                    }
-                    continue;
-
-                case this.S.TEXT_ENTITY:
-                case this.S.ATTRIB_VALUE_ENTITY_Q:
-                case this.S.ATTRIB_VALUE_ENTITY_U:
-                    let returnState;
-                    let buffer;
-                    switch (this.state) {
-                        case this.S.TEXT_ENTITY:
-                            returnState = this.S.TEXT;
-                            buffer = 'textNode';
-                            break;
-
-                        case this.S.ATTRIB_VALUE_ENTITY_Q:
-                            returnState = this.S.ATTRIB_VALUE_QUOTED;
-                            buffer = 'attribValue';
-                            break;
-
-                        case this.S.ATTRIB_VALUE_ENTITY_U:
-                            returnState = this.S.ATTRIB_VALUE_UNQUOTED;
-                            buffer = 'attribValue';
-                            break;
-
-                        default:
-                            throw new Error('Unknown state: ' + this.state);
-                    }
-
-                    if (c === ';') {
-                        this[buffer] += this.parseEntity();
-                        this.entity = '';
-                        this.state = returnState;
-                    } else if (SAX.isMatch(this.entity.length ? entityBody : entityStart, c)) {
-                        this.entity += c;
-                    } else {
-                        this.strictFail('Invalid character in entity name');
-                        this[buffer] += '&' + this.entity + c;
-                        this.entity = '';
-                        this.state = returnState;
-                    }
-
-                    continue;
-
-                default:
-                    throw new Error('Unknown state: ' + this.state);
-            }
-        } // while
-
-        if (this.position >= this.bufferCheckPosition) {
-            this.checkBufferLength();
-        }
-        return this;
-    }
-
-    protected emit(event: string, data?: Error | {}) {
-        this[event] && this[event](data);
-    }
-
-    protected clearBuffers() {
-        for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
-            this[this[i]] = '';
-        }
-    }
-
-    protected flushBuffers() {
-        this.closeText();
-        if (this.cdata !== '') {
-            this.emitNode('oncdata', this.cdata);
-            this.cdata = '';
-        }
-        if (this.script !== '') {
-            this.emitNode('onscript', this.script);
-            this.script = '';
-        }
-    }
-
-    protected end() {
-        if (this.sawRoot && !this.closedRoot) this.strictFail('Unclosed root tag');
-        if ((this.state !== this.S.BEGIN) &&
-            (this.state !== this.S.BEGIN_WHITESPACE) &&
-            (this.state !== this.S.TEXT)) {
-            this.errorFunction('Unexpected end');
-        }
-        this.closeText();
-        this.c = '';
-        this.closed = true;
-        this.emit('onend');
-        new SAXParser(this.strict, this.opt);
-        return this;
-    }
-
-    protected errorFunction(er: string) {
-        this.closeText();
-        if (this.trackPosition) {
-            er += '\nLine: ' + this.line +
-                '\nColumn: ' + this.column +
-                '\nChar: ' + this.c;
-        }
-        const error = new Error(er);
-        this.error = error;
-        this.emit('onerror', error);
-        return this;
-    }
-
-    private attrib() {
-        if (!this.strict) {
-            this.attribName = this.attribName[this.looseCase]();
-        }
-
-        if (this.attribList.indexOf(this.attribName) !== -1 ||
-            this.tag.attributes.hasOwnProperty(this.attribName)) {
-            this.attribName = this.attribValue = '';
-            return;
-        }
-
-        if (this.opt.xmlns) {
-            const qn = SAX.qname(this.attribName, true);
-            const prefix = qn.prefix;
-            const local = qn.local;
-
-            if (prefix === 'xmlns') {
-                // namespace binding attribute. push the binding into scope
-                if (local === 'xml' && this.attribValue !== this.XML_NAMESPACE) {
-                    this.strictFail('xml: prefix must be bound to ' + this.XML_NAMESPACE + '\n' +
-                        'Actual: ' + this.attribValue);
-                } else if (local === 'xmlns' && this.attribValue !== this.XMLNS_NAMESPACE) {
-                    this.strictFail('xmlns: prefix must be bound to ' + this.XMLNS_NAMESPACE + '\n' +
-                        'Actual: ' + this.attribValue);
-                } else {
-                    const tag = this.tag;
-                    const parent = this.tags[this.tags.length - 1] || this;
-                    if (tag.ns === parent.ns) {
-                        tag.ns = Object.create(parent.ns);
-                    }
-                    tag.ns[local] = this.attribValue;
-                }
-            }
-
-            // defer onattribute events until all attributes have been seen
-            // so any new bindings can take effect. preserve attribute order
-            // so deferred events can be emitted in document order
-            this.attribList.push([this.attribName, this.attribValue]);
-        } else {
-            // in non-xmlns mode, we can emit the event right away
-            this.tag.attributes[this.attribName] = this.attribValue;
-            this.emitNode('onattribute', {
-                name: this.attribName,
-                value: this.attribValue,
-            });
-        }
-
-        this.attribName = this.attribValue = '';
-    }
-
-    private newTag() {
-        if (!this.strict) this.tagName = this.tagName[this.looseCase]();
-        const parent = this.tags[this.tags.length - 1] || this;
-        const tag: any = this.tag = {name: this.tagName, attributes: {}};
-
-        // will be overridden if tag contains an xmlns="foo" or xmlns:foo="bar"
-        if (this.opt.xmlns) {
-            tag.ns = parent.ns;
-        }
-        this.attribList.length = 0;
-        this.emitNode('onopentagstart', tag);
-    }
-
-    private parseEntity() {
-        let entity = this.entity;
-        const entityLC = entity.toLowerCase();
-        let num: number = NaN;
-        let numStr = '';
-
-        if (this.ENTITIES[entity]) {
-            return this.ENTITIES[entity];
-        }
-        if (this.ENTITIES[entityLC]) {
-            return this.ENTITIES[entityLC];
-        }
-        entity = entityLC;
-        if (entity.charAt(0) === '#') {
-            if (entity.charAt(1) === 'x') {
-                entity = entity.slice(2);
-                num = parseInt(entity, 16);
-                numStr = num.toString(16);
-            } else {
-                entity = entity.slice(1);
-                num = parseInt(entity, 10);
-                numStr = num.toString(10);
-            }
-        }
-
-        entity = entity.replace(/^0+/, '');
-        if (isNaN(num) || numStr.toLowerCase() !== entity) {
-            this.strictFail('Invalid character entity');
-            return '&' + this.entity + ';';
-        }
-
-        return String.fromCodePoint(num);
-    }
-
-    private beginWhiteSpace(c: string) {
-        if (c === '<') {
+            this.textNode += chunk.substring(starti, i - 1);
+          }
+          if (c === '<' && !(this.sawRoot && this.closedRoot && !this.strict)) {
             this.state = this.S.OPEN_WAKA;
             this.startTagPosition = this.position;
-        } else if (!SAX.isWhitespace(c)) {
-            // have to process this as a text node.
-            // weird, but happens.
-            this.strictFail('Non-whitespace before first tag.');
-            this.textNode = c;
-            this.state = this.S.TEXT;
-        } else {
-        }
-    }
-
-    private strictFail(message: string) {
-        if (typeof this !== 'object' || !(this instanceof SAXParser)) {
-            throw new Error('bad call to strictFail');
-        }
-        if (this.strict) {
-            this.errorFunction(message);
-        }
-    }
-
-    private textApplyOptions(text: string): string {
-        if (this.opt.trim) text = text.trim();
-        if (this.opt.normalize) text = text.replace(/\s+/g, ' ');
-        return text;
-    }
-
-    private emitNode(nodeType: string, data?: {}) {
-        if (this.textNode) this.closeText();
-        this.emit(nodeType, data);
-    }
-
-    private closeText() {
-        this.textNode = this.textApplyOptions(this.textNode);
-        //TODO: figure out why this.textNode can be "" and "undefined"
-        if (this.textNode !== undefined && this.textNode !== '' && this.textNode !== 'undefined') this.emit('ontext', this.textNode);
-        this.textNode = '';
-    }
-
-    private checkBufferLength() {
-        const maxAllowed = Math.max(this.opt.MAX_BUFFER_LENGTH, 10);
-        let maxActual = 0;
-        for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
-            const len = this.hasOwnProperty(this.BUFFERS[i]) ? this[this.BUFFERS[i]].length : 0;
-            if (len > maxAllowed) {
-                // Text/cdata nodes can get big, and since they're buffered,
-                // we can get here under normal conditions.
-                // Avoid issues by emitting the text node now,
-                // so at least it won't get any bigger.
-                switch (this.BUFFERS[i]) {
-                    case 'textNode':
-                        this.closeText();
-                        break;
-                    case 'cdata':
-                        this.emitNode('oncdata', this.cdata);
-                        this.cdata = '';
-                        break;
-                    case 'script':
-                        this.emitNode('onscript', this.script);
-                        this.script = '';
-                        break;
-                    default:
-                        this.errorFunction('Max buffer length exceeded: ' + this.BUFFERS[i]);
-                }
+          } else {
+            if (!SAX.isWhitespace(c) && (!this.sawRoot || this.closedRoot)) {
+              this.strictFail('Text data outside of root node.');
             }
-            maxActual = Math.max(maxActual, len);
-        }
-        // schedule the next check for the earliest possible buffer overrun.
-        const m = this.opt.MAX_BUFFER_LENGTH - maxActual;
-        this.bufferCheckPosition = m + this.position;
-    }
-
-    private openTag(selfClosing?: boolean) {
-        if (this.opt.xmlns) {
-            // emit namespace binding events
-            const tag = this.tag;
-
-            // add namespace info to tag
-            const qn = SAX.qname(this.tagName);
-            tag.prefix = qn.prefix;
-            tag.local = qn.local;
-            tag.uri = tag.ns[qn.prefix] || '';
-
-            if (tag.prefix && !tag.uri) {
-                this.strictFail('Unbound namespace prefix: ' +
-                    JSON.stringify(this.tagName));
-                tag.uri = qn.prefix;
-            }
-
-            const parent = this.tags[this.tags.length - 1] || this;
-            if (tag.ns && parent.ns !== tag.ns) {
-                const that = this;
-                Object.keys(tag.ns).forEach(function (p) {
-                    that.emitNode('onopennamespace', {
-                        prefix: p,
-                        uri: tag.ns[p],
-                    });
-                });
-            }
-
-            // handle deferred onattribute events
-            // Note: do not apply default ns to attributes:
-            //   http://www.w3.org/TR/REC-xml-names/#defaulting
-            for (let i = 0, l = this.attribList.length; i < l; i++) {
-                const nv = this.attribList[i];
-                const name = nv[0];
-                const value = nv[1];
-                const qualName = SAX.qname(name, true);
-                const prefix = qualName.prefix;
-                const local = qualName.local;
-                const uri = prefix === '' ? '' : (tag.ns[prefix] || '');
-                const a = {
-                    name: name,
-                    value: value,
-                    prefix: prefix,
-                    local: local,
-                    uri: uri,
-                };
-
-                // if there's any attributes with an undefined namespace,
-                // then fail on them now.
-                if (prefix && prefix !== 'xmlns' && !uri) {
-                    this.strictFail('Unbound namespace prefix: ' +
-                        JSON.stringify(prefix));
-                    a.uri = prefix;
-                }
-                this.tag.attributes[name] = a;
-                this.emitNode('onattribute', a);
-            }
-            this.attribList.length = 0;
-        }
-
-        this.tag.isSelfClosing = !!selfClosing;
-
-        // process the tag
-        this.sawRoot = true;
-        this.tags.push(this.tag);
-        this.emitNode('onopentag', this.tag);
-        if (!selfClosing) {
-            // special case for <script> in non-strict mode.
-            if (!this.noscript && this.tagName.toLowerCase() === 'script') {
-                this.state = this.S.SCRIPT;
+            if (c === '&') {
+              this.state = this.S.TEXT_ENTITY;
             } else {
-                this.state = this.S.TEXT;
+              this.textNode += c;
             }
-            this.tag = null;
+          }
+          continue;
+
+        case this.S.SCRIPT:
+          // only non-strict
+          if (c === '<') {
+            this.state = this.S.SCRIPT_ENDING;
+          } else {
+            this.script += c;
+          }
+          continue;
+
+        case this.S.SCRIPT_ENDING:
+          if (c === '/') {
+            this.state = this.S.CLOSE_TAG;
+          } else {
+            this.script += '<' + c;
+            this.state = this.S.SCRIPT;
+          }
+          continue;
+
+        case this.S.OPEN_WAKA:
+          // either a /, ?, !, or text is coming next.
+          if (c === '!') {
+            this.state = this.S.SGML_DECL;
+            this.sgmlDecl = '';
+          } else if (SAX.isWhitespace(c)) {
+            // wait for it...
+          } else if (SAX.isMatch(nameStart, c)) {
+            this.state = this.S.OPEN_TAG;
+            this.tagName = c;
+          } else if (c === '/') {
+            this.state = this.S.CLOSE_TAG;
             this.tagName = '';
-        }
-        this.attribName = this.attribValue = '';
-        this.attribList.length = 0;
+          } else if (c === '?') {
+            this.state = this.S.PROC_INST;
+            this.procInstName = this.procInstBody = '';
+          } else {
+            this.strictFail('Unencoded <');
+            // if there was some whitespace, then add that in.
+            if (this.startTagPosition + 1 < this.position) {
+              const pad = this.position - this.startTagPosition;
+              c = new Array(pad).join(' ') + c;
+            }
+            this.textNode += '<' + c;
+            this.state = this.S.TEXT;
+          }
+          continue;
+
+        case this.S.SGML_DECL:
+          if ((this.sgmlDecl + c).toUpperCase() === this.CDATA) {
+            this.emitNode('onopencdata');
+            this.state = this.S.CDATA;
+            this.sgmlDecl = '';
+            this.cdata = '';
+          } else if (this.sgmlDecl + c === '--') {
+            this.state = this.S.COMMENT;
+            this.comment = '';
+            this.sgmlDecl = '';
+          } else if ((this.sgmlDecl + c).toUpperCase() === this.DOCTYPE) {
+            this.state = this.S.DOCTYPE;
+            if (this.doctype || this.sawRoot) {
+              this.strictFail('Inappropriately located doctype declaration');
+            }
+            this.doctype = '';
+            this.sgmlDecl = '';
+          } else if (c === '>') {
+            this.emitNode('onsgmldeclaration', this.sgmlDecl);
+            this.sgmlDecl = '';
+            this.state = this.S.TEXT;
+          } else if (SAX.isQuote(c)) {
+            this.state = this.S.SGML_DECL_QUOTED;
+            this.sgmlDecl += c;
+          } else {
+            this.sgmlDecl += c;
+          }
+          continue;
+
+        case this.S.SGML_DECL_QUOTED:
+          if (c === this.q) {
+            this.state = this.S.SGML_DECL;
+            this.q = '';
+          }
+          this.sgmlDecl += c;
+          continue;
+
+        case this.S.DOCTYPE:
+          if (c === '>') {
+            this.state = this.S.TEXT;
+            this.emitNode('ondoctype', this.doctype);
+            this.doctype = true; // just remember that we saw it.
+          } else {
+            this.doctype += c;
+            if (c === '[') {
+              this.state = this.S.DOCTYPE_DTD;
+            } else if (SAX.isQuote(c)) {
+              this.state = this.S.DOCTYPE_QUOTED;
+              this.q = c;
+            }
+          }
+          continue;
+
+        case this.S.DOCTYPE_QUOTED:
+          this.doctype += c;
+          if (c === this.q) {
+            this.q = '';
+            this.state = this.S.DOCTYPE;
+          }
+          continue;
+
+        case this.S.DOCTYPE_DTD:
+          this.doctype += c;
+          if (c === ']') {
+            this.state = this.S.DOCTYPE;
+          } else if (SAX.isQuote(c)) {
+            this.state = this.S.DOCTYPE_DTD_QUOTED;
+            this.q = c;
+          }
+          continue;
+
+        case this.S.DOCTYPE_DTD_QUOTED:
+          this.doctype += c;
+          if (c === this.q) {
+            this.state = this.S.DOCTYPE_DTD;
+            this.q = '';
+          }
+          continue;
+
+        case this.S.COMMENT:
+          if (c === '-') {
+            this.state = this.S.COMMENT_ENDING;
+          } else {
+            this.comment += c;
+          }
+          continue;
+
+        case this.S.COMMENT_ENDING:
+          if (c === '-') {
+            this.state = this.S.COMMENT_ENDED;
+            this.comment = this.textApplyOptions(this.comment);
+            if (this.comment) {
+              this.emitNode('oncomment', this.comment);
+            }
+            this.comment = '';
+          } else {
+            this.comment += '-' + c;
+            this.state = this.S.COMMENT;
+          }
+          continue;
+
+        case this.S.COMMENT_ENDED:
+          if (c !== '>') {
+            this.strictFail('Malformed comment');
+            // allow <!-- blah -- bloo --> in non-strict mode,
+            // which is a comment of " blah -- bloo "
+            this.comment += '--' + c;
+            this.state = this.S.COMMENT;
+          } else {
+            this.state = this.S.TEXT;
+          }
+          continue;
+
+        case this.S.CDATA:
+          if (c === ']') {
+            this.state = this.S.CDATA_ENDING;
+          } else {
+            this.cdata += c;
+          }
+          continue;
+
+        case this.S.CDATA_ENDING:
+          if (c === ']') {
+            this.state = this.S.CDATA_ENDING_2;
+          } else {
+            this.cdata += ']' + c;
+            this.state = this.S.CDATA;
+          }
+          continue;
+
+        case this.S.CDATA_ENDING_2:
+          if (c === '>') {
+            if (this.cdata) {
+              this.emitNode('oncdata', this.cdata);
+            }
+            this.emitNode('onclosecdata');
+            this.cdata = '';
+            this.state = this.S.TEXT;
+          } else if (c === ']') {
+            this.cdata += ']';
+          } else {
+            this.cdata += ']]' + c;
+            this.state = this.S.CDATA;
+          }
+          continue;
+
+        case this.S.PROC_INST:
+          if (c === '?') {
+            this.state = this.S.PROC_INST_ENDING;
+          } else if (SAX.isWhitespace(c)) {
+            this.state = this.S.PROC_INST_BODY;
+          } else {
+            this.procInstName += c;
+          }
+          continue;
+
+        case this.S.PROC_INST_BODY:
+          if (!this.procInstBody && SAX.isWhitespace(c)) {
+            continue;
+          } else if (c === '?') {
+            this.state = this.S.PROC_INST_ENDING;
+          } else {
+            this.procInstBody += c;
+          }
+          continue;
+
+        case this.S.PROC_INST_ENDING:
+          if (c === '>') {
+            this.emitNode('onprocessinginstruction', {
+              name: this.procInstName,
+              body: this.procInstBody,
+            });
+            this.procInstName = this.procInstBody = '';
+            this.state = this.S.TEXT;
+          } else {
+            this.procInstBody += '?' + c;
+            this.state = this.S.PROC_INST_BODY;
+          }
+          continue;
+
+        case this.S.OPEN_TAG:
+          if (SAX.isMatch(nameBody, c)) {
+            this.tagName += c;
+          } else {
+            this.newTag();
+            if (c === '>') {
+              this.openTag();
+            } else if (c === '/') {
+              this.state = this.S.OPEN_TAG_SLASH;
+            } else {
+              if (!SAX.isWhitespace(c)) {
+                this.strictFail('Invalid character in tag name');
+              }
+              this.state = this.S.ATTRIB;
+            }
+          }
+          continue;
+
+        case this.S.OPEN_TAG_SLASH:
+          if (c === '>') {
+            this.openTag(true);
+            this.closeTag();
+          } else {
+            this.strictFail('Forward-slash in opening tag not followed by >');
+            this.state = this.S.ATTRIB;
+          }
+          continue;
+
+        case this.S.ATTRIB:
+          // haven't read the attribute name yet.
+          if (SAX.isWhitespace(c)) {
+            continue;
+          } else if (c === '>') {
+            this.openTag();
+          } else if (c === '/') {
+            this.state = this.S.OPEN_TAG_SLASH;
+          } else if (SAX.isMatch(nameStart, c)) {
+            this.attribName = c;
+            this.attribValue = '';
+            this.state = this.S.ATTRIB_NAME;
+          } else {
+            this.strictFail('Invalid attribute name');
+          }
+          continue;
+
+        case this.S.ATTRIB_NAME:
+          if (c === '=') {
+            this.state = this.S.ATTRIB_VALUE;
+          } else if (c === '>') {
+            this.strictFail('Attribute without value');
+            this.attribValue = this.attribName;
+            this.attrib();
+            this.openTag();
+          } else if (SAX.isWhitespace(c)) {
+            this.state = this.S.ATTRIB_NAME_SAW_WHITE;
+          } else if (SAX.isMatch(nameBody, c)) {
+            this.attribName += c;
+          } else {
+            this.strictFail('Invalid attribute name');
+          }
+          continue;
+
+        case this.S.ATTRIB_NAME_SAW_WHITE:
+          if (c === '=') {
+            this.state = this.S.ATTRIB_VALUE;
+          } else if (SAX.isWhitespace(c)) {
+            continue;
+          } else {
+            this.strictFail('Attribute without value');
+            this.tag.attributes[this.attribName] = '';
+            this.attribValue = '';
+            this.emitNode('onattribute', {
+              name: this.attribName,
+              value: '',
+            });
+            this.attribName = '';
+            if (c === '>') {
+              this.openTag();
+            } else if (SAX.isMatch(nameStart, c)) {
+              this.attribName = c;
+              this.state = this.S.ATTRIB_NAME;
+            } else {
+              this.strictFail('Invalid attribute name');
+              this.state = this.S.ATTRIB;
+            }
+          }
+          continue;
+
+        case this.S.ATTRIB_VALUE:
+          if (SAX.isWhitespace(c)) {
+            continue;
+          } else if (SAX.isQuote(c)) {
+            this.q = c;
+            this.state = this.S.ATTRIB_VALUE_QUOTED;
+          } else {
+            this.strictFail('Unquoted attribute value');
+            this.state = this.S.ATTRIB_VALUE_UNQUOTED;
+            this.attribValue = c;
+          }
+          continue;
+
+        case this.S.ATTRIB_VALUE_QUOTED:
+          if (c !== this.q) {
+            if (c === '&') {
+              this.state = this.S.ATTRIB_VALUE_ENTITY_Q;
+            } else {
+              this.attribValue += c;
+            }
+            continue;
+          }
+          this.attrib();
+          this.q = '';
+          this.state = this.S.ATTRIB_VALUE_CLOSED;
+          continue;
+
+        case this.S.ATTRIB_VALUE_CLOSED:
+          if (SAX.isWhitespace(c)) {
+            this.state = this.S.ATTRIB;
+          } else if (c === '>') {
+            this.openTag();
+          } else if (c === '/') {
+            this.state = this.S.OPEN_TAG_SLASH;
+          } else if (SAX.isMatch(nameStart, c)) {
+            this.strictFail('No whitespace between attributes');
+            this.attribName = c;
+            this.attribValue = '';
+            this.state = this.S.ATTRIB_NAME;
+          } else {
+            this.strictFail('Invalid attribute name');
+          }
+          continue;
+
+        case this.S.ATTRIB_VALUE_UNQUOTED:
+          if (!SAX.isAttribEnd(c)) {
+            if (c === '&') {
+              this.state = this.S.ATTRIB_VALUE_ENTITY_U;
+            } else {
+              this.attribValue += c;
+            }
+            continue;
+          }
+          this.attrib();
+          if (c === '>') {
+            this.openTag();
+          } else {
+            this.state = this.S.ATTRIB;
+          }
+          continue;
+
+        case this.S.CLOSE_TAG:
+          if (!this.tagName) {
+            if (SAX.isWhitespace(c)) {
+              continue;
+            } else if (SAX.notMatch(nameStart, c)) {
+              if (this.script) {
+                this.script += '</' + c;
+                this.state = this.S.SCRIPT;
+              } else {
+                this.strictFail('Invalid tagname in closing tag.');
+              }
+            } else {
+              this.tagName = c;
+            }
+          } else if (c === '>') {
+            this.closeTag();
+          } else if (SAX.isMatch(nameBody, c)) {
+            this.tagName += c;
+          } else if (this.script) {
+            this.script += '</' + this.tagName;
+            this.tagName = '';
+            this.state = this.S.SCRIPT;
+          } else {
+            if (!SAX.isWhitespace(c)) {
+              this.strictFail('Invalid tagname in closing tag');
+            }
+            this.state = this.S.CLOSE_TAG_SAW_WHITE;
+          }
+          continue;
+
+        case this.S.CLOSE_TAG_SAW_WHITE:
+          if (SAX.isWhitespace(c)) {
+            continue;
+          }
+          if (c === '>') {
+            this.closeTag();
+          } else {
+            this.strictFail('Invalid characters in closing tag');
+          }
+          continue;
+
+        case this.S.TEXT_ENTITY:
+        case this.S.ATTRIB_VALUE_ENTITY_Q:
+        case this.S.ATTRIB_VALUE_ENTITY_U:
+          let returnState;
+          let buffer;
+          switch (this.state) {
+            case this.S.TEXT_ENTITY:
+              returnState = this.S.TEXT;
+              buffer = 'textNode';
+              break;
+
+            case this.S.ATTRIB_VALUE_ENTITY_Q:
+              returnState = this.S.ATTRIB_VALUE_QUOTED;
+              buffer = 'attribValue';
+              break;
+
+            case this.S.ATTRIB_VALUE_ENTITY_U:
+              returnState = this.S.ATTRIB_VALUE_UNQUOTED;
+              buffer = 'attribValue';
+              break;
+
+            default:
+              throw new Error('Unknown state: ' + this.state);
+          }
+
+          if (c === ';') {
+            this[buffer] += this.parseEntity();
+            this.entity = '';
+            this.state = returnState;
+          } else if (SAX.isMatch(this.entity.length ? entityBody : entityStart, c)) {
+            this.entity += c;
+          } else {
+            this.strictFail('Invalid character in entity name');
+            this[buffer] += '&' + this.entity + c;
+            this.entity = '';
+            this.state = returnState;
+          }
+
+          continue;
+
+        default:
+          throw new Error('Unknown state: ' + this.state);
+      }
+    } // while
+
+    if (this.position >= this.bufferCheckPosition) {
+      this.checkBufferLength();
+    }
+    return this;
+  }
+
+  protected emit(event: string, data?: Error | {}) {
+    this[event] && this[event](data);
+  }
+
+  protected clearBuffers() {
+    for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
+      this[this[i]] = '';
+    }
+  }
+
+  protected flushBuffers() {
+    this.closeText();
+    if (this.cdata !== '') {
+      this.emitNode('oncdata', this.cdata);
+      this.cdata = '';
+    }
+    if (this.script !== '') {
+      this.emitNode('onscript', this.script);
+      this.script = '';
+    }
+  }
+
+  protected end() {
+    if (this.sawRoot && !this.closedRoot) this.strictFail('Unclosed root tag');
+    if ((this.state !== this.S.BEGIN) &&
+      (this.state !== this.S.BEGIN_WHITESPACE) &&
+      (this.state !== this.S.TEXT)) {
+      this.errorFunction('Unexpected end');
+    }
+    this.closeText();
+    this.c = '';
+    this.closed = true;
+    this.emit('onend');
+    new SAXParser(this.strict, this.opt);
+    return this;
+  }
+
+  protected errorFunction(er: string) {
+    this.closeText();
+    if (this.trackPosition) {
+      er += '\nLine: ' + this.line +
+        '\nColumn: ' + this.column +
+        '\nChar: ' + this.c;
+    }
+    const error = new Error(er);
+    this.error = error;
+    this.emit('onerror', error);
+    return this;
+  }
+
+  private attrib() {
+    if (!this.strict) {
+      this.attribName = this.attribName[this.looseCase]();
     }
 
-    private closeTag() {
-        if (!this.tagName) {
-            this.strictFail('Weird empty close tag.');
-            this.textNode += '</>';
-            this.state = this.S.TEXT;
-            return;
-        }
+    if (this.attribList.indexOf(this.attribName) !== -1 ||
+      this.tag.attributes.hasOwnProperty(this.attribName)) {
+      this.attribName = this.attribValue = '';
+      return;
+    }
 
-        if (this.script) {
-            if (this.tagName !== 'script') {
-                this.script += '</' + this.tagName + '>';
-                this.tagName = '';
-                this.state = this.S.SCRIPT;
-                return;
-            }
+    if (this.opt.xmlns) {
+      const qn = SAX.qname(this.attribName, true);
+      const prefix = qn.prefix;
+      const local = qn.local;
+
+      if (prefix === 'xmlns') {
+        // namespace binding attribute. push the binding into scope
+        if (local === 'xml' && this.attribValue !== this.XML_NAMESPACE) {
+          this.strictFail('xml: prefix must be bound to ' + this.XML_NAMESPACE + '\n' +
+            'Actual: ' + this.attribValue);
+        } else if (local === 'xmlns' && this.attribValue !== this.XMLNS_NAMESPACE) {
+          this.strictFail('xmlns: prefix must be bound to ' + this.XMLNS_NAMESPACE + '\n' +
+            'Actual: ' + this.attribValue);
+        } else {
+          const tag = this.tag;
+          const parent = this.tags[this.tags.length - 1] || this;
+          if (tag.ns === parent.ns) {
+            tag.ns = Object.create(parent.ns);
+          }
+          tag.ns[local] = this.attribValue;
+        }
+      }
+
+      // defer onattribute events until all attributes have been seen
+      // so any new bindings can take effect. preserve attribute order
+      // so deferred events can be emitted in document order
+      this.attribList.push([this.attribName, this.attribValue]);
+    } else {
+      // in non-xmlns mode, we can emit the event right away
+      this.tag.attributes[this.attribName] = this.attribValue;
+      this.emitNode('onattribute', {
+        name: this.attribName,
+        value: this.attribValue,
+      });
+    }
+
+    this.attribName = this.attribValue = '';
+  }
+
+  private newTag() {
+    if (!this.strict) this.tagName = this.tagName[this.looseCase]();
+    const parent = this.tags[this.tags.length - 1] || this;
+    const tag: any = this.tag = {name: this.tagName, attributes: {}};
+
+    // will be overridden if tag contains an xmlns="foo" or xmlns:foo="bar"
+    if (this.opt.xmlns) {
+      tag.ns = parent.ns;
+    }
+    this.attribList.length = 0;
+    this.emitNode('onopentagstart', tag);
+  }
+
+  private parseEntity() {
+    let entity = this.entity;
+    const entityLC = entity.toLowerCase();
+    let num: number = NaN;
+    let numStr = '';
+
+    if (this.ENTITIES[entity]) {
+      return this.ENTITIES[entity];
+    }
+    if (this.ENTITIES[entityLC]) {
+      return this.ENTITIES[entityLC];
+    }
+    entity = entityLC;
+    if (entity.charAt(0) === '#') {
+      if (entity.charAt(1) === 'x') {
+        entity = entity.slice(2);
+        num = parseInt(entity, 16);
+        numStr = num.toString(16);
+      } else {
+        entity = entity.slice(1);
+        num = parseInt(entity, 10);
+        numStr = num.toString(10);
+      }
+    }
+
+    entity = entity.replace(/^0+/, '');
+    if (isNaN(num) || numStr.toLowerCase() !== entity) {
+      this.strictFail('Invalid character entity');
+      return '&' + this.entity + ';';
+    }
+
+    return String.fromCodePoint(num);
+  }
+
+  private beginWhiteSpace(c: string) {
+    if (c === '<') {
+      this.state = this.S.OPEN_WAKA;
+      this.startTagPosition = this.position;
+    } else if (!SAX.isWhitespace(c)) {
+      // have to process this as a text node.
+      // weird, but happens.
+      this.strictFail('Non-whitespace before first tag.');
+      this.textNode = c;
+      this.state = this.S.TEXT;
+    } else {
+    }
+  }
+
+  private strictFail(message: string) {
+    if (typeof this !== 'object' || !(this instanceof SAXParser)) {
+      throw new Error('bad call to strictFail');
+    }
+    if (this.strict) {
+      this.errorFunction(message);
+    }
+  }
+
+  private textApplyOptions(text: string): string {
+    if (this.opt.trim) text = text.trim();
+    if (this.opt.normalize) text = text.replace(/\s+/g, ' ');
+    return text;
+  }
+
+  private emitNode(nodeType: string, data?: {}) {
+    if (this.textNode) this.closeText();
+    this.emit(nodeType, data);
+  }
+
+  private closeText() {
+    this.textNode = this.textApplyOptions(this.textNode);
+    //TODO: figure out why this.textNode can be "" and "undefined"
+    if (this.textNode !== undefined && this.textNode !== '' && this.textNode !== 'undefined') this.emit('ontext', this.textNode);
+    this.textNode = '';
+  }
+
+  private checkBufferLength() {
+    const maxAllowed = Math.max(this.opt.MAX_BUFFER_LENGTH, 10);
+    let maxActual = 0;
+    for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
+      const len = this.hasOwnProperty(this.BUFFERS[i]) ? this[this.BUFFERS[i]].length : 0;
+      if (len > maxAllowed) {
+        // Text/cdata nodes can get big, and since they're buffered,
+        // we can get here under normal conditions.
+        // Avoid issues by emitting the text node now,
+        // so at least it won't get any bigger.
+        switch (this.BUFFERS[i]) {
+          case 'textNode':
+            this.closeText();
+            break;
+          case 'cdata':
+            this.emitNode('oncdata', this.cdata);
+            this.cdata = '';
+            break;
+          case 'script':
             this.emitNode('onscript', this.script);
             this.script = '';
+            break;
+          default:
+            this.errorFunction('Max buffer length exceeded: ' + this.BUFFERS[i]);
         }
-
-        // first make sure that the closing tag actually exists.
-        // <a><b></c></b></a> will close everything, otherwise.
-        let t = this.tags.length;
-        let tagName = this.tagName;
-        if (!this.strict) {
-            tagName = tagName[this.looseCase]();
-        }
-        while (t--) {
-            const close = this.tags[t];
-            if (close.name !== tagName) {
-                // fail the first time in strict mode
-                this.strictFail('Unexpected close tag');
-            } else {
-                break;
-            }
-        }
-
-        // didn't find it.  we already failed for strict, so just abort.
-        if (t < 0) {
-            this.strictFail('Unmatched closing tag: ' + this.tagName);
-            this.textNode += '</' + this.tagName + '>';
-            this.state = this.S.TEXT;
-            return;
-        }
-        this.tagName = tagName;
-        let s = this.tags.length;
-        while (s-- > t) {
-            const tag = this.tag = this.tags.pop();
-            this.tagName = this.tag.name;
-            this.emitNode('onclosetag', this.tagName);
-
-            const x: { [index: string]: any } = {};
-            for (let i in tag.ns) {
-                if (tag.ns.hasOwnProperty(i)) {
-                    x[i] = tag.ns[i];
-                }
-            }
-
-            const parent = this.tags[this.tags.length - 1] || this;
-            if (this.opt.xmlns && tag.ns !== parent.ns) {
-                // remove namespace bindings introduced by tag
-                const that = this;
-                Object.keys(tag.ns).forEach(function (p) {
-                    const n = tag.ns[p];
-                    that.emitNode('onclosenamespace', {prefix: p, uri: n});
-                });
-            }
-        }
-        if (t === 0) this.closedRoot = true;
-        this.tagName = this.attribValue = this.attribName = '';
-        this.attribList.length = 0;
-        this.state = this.S.TEXT;
+      }
+      maxActual = Math.max(maxActual, len);
     }
+    // schedule the next check for the earliest possible buffer overrun.
+    const m = this.opt.MAX_BUFFER_LENGTH - maxActual;
+    this.bufferCheckPosition = m + this.position;
+  }
+
+  private openTag(selfClosing?: boolean) {
+    if (this.opt.xmlns) {
+      // emit namespace binding events
+      const tag = this.tag;
+
+      // add namespace info to tag
+      const qn = SAX.qname(this.tagName);
+      tag.prefix = qn.prefix;
+      tag.local = qn.local;
+      tag.uri = tag.ns[qn.prefix] || '';
+
+      if (tag.prefix && !tag.uri) {
+        this.strictFail('Unbound namespace prefix: ' +
+          JSON.stringify(this.tagName));
+        tag.uri = qn.prefix;
+      }
+
+      const parent = this.tags[this.tags.length - 1] || this;
+      if (tag.ns && parent.ns !== tag.ns) {
+        const that = this;
+        Object.keys(tag.ns).forEach(function (p) {
+          that.emitNode('onopennamespace', {
+            prefix: p,
+            uri: tag.ns[p],
+          });
+        });
+      }
+
+      // handle deferred onattribute events
+      // Note: do not apply default ns to attributes:
+      //   http://www.w3.org/TR/REC-xml-names/#defaulting
+      for (let i = 0, l = this.attribList.length; i < l; i++) {
+        const nv = this.attribList[i];
+        const name = nv[0];
+        const value = nv[1];
+        const qualName = SAX.qname(name, true);
+        const prefix = qualName.prefix;
+        const local = qualName.local;
+        const uri = prefix === '' ? '' : (tag.ns[prefix] || '');
+        const a = {
+          name: name,
+          value: value,
+          prefix: prefix,
+          local: local,
+          uri: uri,
+        };
+
+        // if there's any attributes with an undefined namespace,
+        // then fail on them now.
+        if (prefix && prefix !== 'xmlns' && !uri) {
+          this.strictFail('Unbound namespace prefix: ' +
+            JSON.stringify(prefix));
+          a.uri = prefix;
+        }
+        this.tag.attributes[name] = a;
+        this.emitNode('onattribute', a);
+      }
+      this.attribList.length = 0;
+    }
+
+    this.tag.isSelfClosing = !!selfClosing;
+
+    // process the tag
+    this.sawRoot = true;
+    this.tags.push(this.tag);
+    this.emitNode('onopentag', this.tag);
+    if (!selfClosing) {
+      // special case for <script> in non-strict mode.
+      if (!this.noscript && this.tagName.toLowerCase() === 'script') {
+        this.state = this.S.SCRIPT;
+      } else {
+        this.state = this.S.TEXT;
+      }
+      this.tag = null;
+      this.tagName = '';
+    }
+    this.attribName = this.attribValue = '';
+    this.attribList.length = 0;
+  }
+
+  private closeTag() {
+    if (!this.tagName) {
+      this.strictFail('Weird empty close tag.');
+      this.textNode += '</>';
+      this.state = this.S.TEXT;
+      return;
+    }
+
+    if (this.script) {
+      if (this.tagName !== 'script') {
+        this.script += '</' + this.tagName + '>';
+        this.tagName = '';
+        this.state = this.S.SCRIPT;
+        return;
+      }
+      this.emitNode('onscript', this.script);
+      this.script = '';
+    }
+
+    // first make sure that the closing tag actually exists.
+    // <a><b></c></b></a> will close everything, otherwise.
+    let t = this.tags.length;
+    let tagName = this.tagName;
+    if (!this.strict) {
+      tagName = tagName[this.looseCase]();
+    }
+    while (t--) {
+      const close = this.tags[t];
+      if (close.name !== tagName) {
+        // fail the first time in strict mode
+        this.strictFail('Unexpected close tag');
+      } else {
+        break;
+      }
+    }
+
+    // didn't find it.  we already failed for strict, so just abort.
+    if (t < 0) {
+      this.strictFail('Unmatched closing tag: ' + this.tagName);
+      this.textNode += '</' + this.tagName + '>';
+      this.state = this.S.TEXT;
+      return;
+    }
+    this.tagName = tagName;
+    let s = this.tags.length;
+    while (s-- > t) {
+      const tag = this.tag = this.tags.pop();
+      this.tagName = this.tag.name;
+      this.emitNode('onclosetag', this.tagName);
+
+      const x: { [index: string]: any } = {};
+      for (let i in tag.ns) {
+        if (tag.ns.hasOwnProperty(i)) {
+          x[i] = tag.ns[i];
+        }
+      }
+
+      const parent = this.tags[this.tags.length - 1] || this;
+      if (this.opt.xmlns && tag.ns !== parent.ns) {
+        // remove namespace bindings introduced by tag
+        const that = this;
+        Object.keys(tag.ns).forEach(function (p) {
+          const n = tag.ns[p];
+          that.emitNode('onclosenamespace', {prefix: p, uri: n});
+        });
+      }
+    }
+    if (t === 0) this.closedRoot = true;
+    this.tagName = this.attribValue = this.attribName = '';
+    this.attribList.length = 0;
+    this.state = this.S.TEXT;
+  }
 }
 
 export class SAXParser extends SAX {
-    constructor(strict: boolean, opt: any) {
-        super();
+  constructor(strict: boolean, opt: any) {
+    super();
 
-        if (!(this instanceof SAXParser)) {
-            return new SAXParser(strict, opt);
-        }
-
-        this.clearBuffers();
-        this.q = this.c = '';
-        this.opt = {MAX_BUFFER_LENGTH: 64 * 1024, ...opt};
-        this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
-        this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags || false;
-        this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
-        this.tags = [];
-        this.closed = this.closedRoot = this.sawRoot = false;
-        this.tag = this.error = null;
-        this.strict = !!strict;
-        this.noscript = !!(strict || this.opt.noscript);
-        this.state = this.S.BEGIN;
-        this.strictEntities = this.opt.strictEntities;
-        this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
-        this.attribList = [];
-
-        // namespaces form a prototype chain.
-        // it always points at the current tag,
-        // which protos to its parent tag.
-        if (this.opt.xmlns) {
-            this.ns = Object.create(this.rootNS);
-        }
-
-        // mostly just for error reporting
-        this.trackPosition = this.opt.position !== false;
-        if (this.trackPosition) {
-            this.position = this.line = this.column = 0;
-        }
-        this.emit('onready');
+    if (!(this instanceof SAXParser)) {
+      return new SAXParser(strict, opt);
     }
+
+    this.clearBuffers();
+    this.q = this.c = '';
+    this.opt = {MAX_BUFFER_LENGTH: 64 * 1024, ...opt};
+    this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
+    this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags || false;
+    this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
+    this.tags = [];
+    this.closed = this.closedRoot = this.sawRoot = false;
+    this.tag = this.error = null;
+    this.strict = !!strict;
+    this.noscript = !!(strict || this.opt.noscript);
+    this.state = this.S.BEGIN;
+    this.strictEntities = this.opt.strictEntities;
+    this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
+    this.attribList = [];
+
+    // namespaces form a prototype chain.
+    // it always points at the current tag,
+    // which protos to its parent tag.
+    if (this.opt.xmlns) {
+      this.ns = Object.create(this.rootNS);
+    }
+
+    // mostly just for error reporting
+    this.trackPosition = this.opt.position !== false;
+    if (this.trackPosition) {
+      this.position = this.line = this.column = 0;
+    }
+    this.emit('onready');
+  }
 
   // TODO: try to make it better
   ontext: Function = () => {
@@ -1462,16 +1462,16 @@ export class SAXParser extends SAX {
   onclosenamespace: Function = () => {
   };
 
-    public resume() {
-        this.error = null;
-        return this;
-    }
+  public resume() {
+    this.error = null;
+    return this;
+  }
 
-    public close() {
-        return this.write(null);
-    }
+  public close() {
+    return this.write(null);
+  }
 
-    public flush() {
-        this.flushBuffers();
-    }
+  public flush() {
+    this.flushBuffers();
+  }
 }
