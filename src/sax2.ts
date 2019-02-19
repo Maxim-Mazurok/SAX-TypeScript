@@ -257,7 +257,7 @@ export const ENTITIES: { [key: string]: number | string } = {
   'hearts': 9829,
   'diams': 9830,
 };
-Object.keys(ENTITIES).forEach(function (key) {
+Object.keys(ENTITIES).forEach((key) => {
   const e = ENTITIES[key];
   ENTITIES[key] = typeof e === 'number' ? String.fromCharCode(e) : e;
 });
@@ -402,12 +402,6 @@ export class SAX implements SAXInterface {
 
     this.S = 0;
 
-    const that = this;
-    Object.keys(this.ENTITIES).forEach(function (key) {
-      const e = that.ENTITIES[key];
-      that.ENTITIES[key] = typeof e === 'number' ? String.fromCharCode(e) : e;
-    });
-
     for (const s in this.STATE) {
       if (this.STATE.hasOwnProperty(s)) {
         this.STATE[this.STATE[s]] = s;
@@ -417,9 +411,7 @@ export class SAX implements SAXInterface {
     // shorthand
     this.S = this.STATE;
 
-    this.parser = function (strict, opt) {
-      return new SAXParser(strict, opt);
-    };
+    this.parser = (strict, opt) => new SAXParser(strict, opt);
   }
 
   private static charAt(chunk: string, i: number) {
@@ -1251,7 +1243,7 @@ export class SAX implements SAXInterface {
       const parent = this.tags[this.tags.length - 1] || this;
       if (tag.ns && parent.ns !== tag.ns) {
         const that = this;
-        Object.keys(tag.ns).forEach(function (p) {
+        Object.keys(tag.ns).forEach((p) => {
           that.emitNode('onopennamespace', {
             prefix: p,
             uri: tag.ns[p],
@@ -1372,7 +1364,7 @@ export class SAX implements SAXInterface {
       if (this.opt.xmlns && tag.ns !== parent.ns) {
         // remove namespace bindings introduced by tag
         const that = this;
-        Object.keys(tag.ns).forEach(function (p) {
+        Object.keys(tag.ns).forEach((p) => {
           const n = tag.ns[p];
           that.emitNode('onclosenamespace', {prefix: p, uri: n});
         });
