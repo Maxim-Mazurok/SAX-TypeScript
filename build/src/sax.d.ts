@@ -1,6 +1,6 @@
-declare type SAXParserOptions = {
+interface SAXParserOptions {
     lowercase: boolean;
-};
+}
 export declare class SAXParser {
     private buffers;
     private bufferCheckPosition;

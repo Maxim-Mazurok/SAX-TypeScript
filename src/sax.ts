@@ -1,6 +1,6 @@
-type SAXParserOptions = {
-  lowercase: boolean,
-};
+interface SAXParserOptions {
+  lowercase: boolean;
+}
 
 enum BufferEnum {
   comment,
@@ -38,37 +38,37 @@ enum EventEnum {
   closeNamespace,
 }
 
-const MAX_BUFFER_LENGTH: number = 64 * 1024;
-const EVENTS: EventEnum[] = [
-  EventEnum.text,
-  EventEnum.processingInstruction,
-  EventEnum.SGMLDeclaration,
-  EventEnum.doctype,
-  EventEnum.comment,
-  EventEnum.openTagStart,
-  EventEnum.attribute,
-  EventEnum.openTag,
-  EventEnum.closeTag,
-  EventEnum.openCDATA,
-  EventEnum.CDATA,
-  EventEnum.closeCDATA,
-  EventEnum.error,
-  EventEnum.end,
-  EventEnum.ready,
-  EventEnum.script,
-  EventEnum.openNamespace,
-  EventEnum.closeNamespace,
-];
-const DEFAULT_OPTIONS: SAXParserOptions = {
-  lowercase: false,
-};
-const XML_ENTITIES: {[key: string]: string} = {
-  'amp': '&',
-  'gt': '>',
-  'lt': '<',
-  'quot': '"',
-  'apos': '\'',
-};
+const MAX_BUFFER_LENGTH: number = 64 * 1024,
+  EVENTS: EventEnum[] = [
+    EventEnum.text,
+    EventEnum.processingInstruction,
+    EventEnum.SGMLDeclaration,
+    EventEnum.doctype,
+    EventEnum.comment,
+    EventEnum.openTagStart,
+    EventEnum.attribute,
+    EventEnum.openTag,
+    EventEnum.closeTag,
+    EventEnum.openCDATA,
+    EventEnum.CDATA,
+    EventEnum.closeCDATA,
+    EventEnum.error,
+    EventEnum.end,
+    EventEnum.ready,
+    EventEnum.script,
+    EventEnum.openNamespace,
+    EventEnum.closeNamespace,
+  ],
+  DEFAULT_OPTIONS: SAXParserOptions = {
+    lowercase: false,
+  },
+  XML_ENTITIES: { [key: string]: string } = {
+    amp: '&',
+    gt: '>',
+    lt: '<',
+    quot: '"',
+    apos: "'",
+  };
 
 export class SAXParser {
   private buffers: Map<BufferEnum, string> = new Map([

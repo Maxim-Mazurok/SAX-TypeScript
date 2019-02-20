@@ -58,11 +58,11 @@ const MAX_BUFFER_LENGTH = 64 * 1024, EVENTS = [
 ], DEFAULT_OPTIONS = {
     lowercase: false,
 }, XML_ENTITIES = {
-    'amp': '&',
-    'gt': '>',
-    'lt': '<',
-    'quot': '"',
-    'apos': '\'',
+    amp: '&',
+    gt: '>',
+    lt: '<',
+    quot: '"',
+    apos: "'",
 };
 class SAXParser {
     constructor(strict = false, opt = DEFAULT_OPTIONS) {

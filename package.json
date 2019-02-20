@@ -27,7 +27,7 @@
     "README.md"
   ],
   "devDependencies": {
-    "gts": "^0.9.0",
+    "gts": "google/ts-style#master",
     "tap": "^10.7.3",
     "typescript": "~3.1.0"
   }
