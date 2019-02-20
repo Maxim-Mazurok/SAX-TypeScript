@@ -18,7 +18,7 @@
     "prepare": "npm run compile",
     "pretest": "npm run compile"
   },
-  "repository": "git://github.com/Maxim-Mazurok/SAX-TypeScript.git",
+  "repository": "git://github.com/Maxim-Mazurok/sax-ts.git",
   "files": [
     "src/sax2.ts",
     "build/src/sax2.d.ts",

@@ -1,64 +1,46 @@
-# SAX-TypeScript (Simple API for XML in TypeScript) [in-development]
+# sax-ts
 
-A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML and HTML.
+## Simple API for XML in TypeScript
+
+A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
+and HTML.
 
 Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 
 ## What This Is
 
-* A very simple tool to parse through an XML string.
-* A stepping stone to a streaming HTML parser.
-* A handy way to deal with RSS and other mostly-ok-but-kinda-broken XML
+- A very simple tool to parse through an XML string.
+- A handy way to deal with RSS and other mostly-ok-but-kinda-broken XML
   docs.
-
-## What This Is (probably) Not
-
-* An HTML Parser - That's a fine goal, but this isn't it.  It's just
-  XML.
-* A DOM Builder - You can use it to build an object model out of XML,
-  but it does not do that out of the box.
-* XSLT - No DOM = no querying.
-* 100% Compliant with (some other SAX implementation) - Most SAX
-  implementations are in Java and do a lot more than this does.
-* An XML Validator - It does a little validation when in strict mode, but
-  not much.
-* A Schema-Aware XSD Thing - Schemas are an exercise in fetishistic
-  masochism.
-* A DTD-aware Thing - Fetching DTDs is a much bigger job.
-
-## Regarding `<!DOCTYPE`s and `<!ENTITY`s
-
-The parser will handle the basic XML entities in text nodes and attribute
-values: `&amp; &lt; &gt; &apos; &quot;`. It's possible to define additional
-entities in XML by putting them in the DTD. This parser doesn't do anything
-with that. If you want to listen to the `ondoctype` event, and then fetch
-the doctypes, and read the entities and add them to `parser.ENTITIES`, then
-be my guest.
-
-Unknown entities will fail in strict mode, and in loose mode, will pass
-through unmolested.
+- A perfect way to parse 80 GB of XML data and don't burn your laptop :) 
 
 ## Usage
 
-```javascript
-var sax = require("./lib/sax"),
-  strict = true, // set to false for html-mode
-  parser = new sax.SAXParser(strict);
+```typescript
+import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.5/src/sax.ts';
+const strict: boolean = true; // change to false for HTML parsing
+const options: {} = {}; // refer to "Arguments" section
+const parser = new SAXParser(strict, options);
 
 parser.onerror = function (e) {
   // an error happened.
+  console.error(e);
 };
 parser.ontext = function (t) {
   // got some text.  t is the string of text.
+  console.log(`onText: ${t}`)
 };
 parser.onopentag = function (node) {
   // opened a tag.  node has "name" and "attributes"
+  console.log(`onOpenTag: "${node}"`)
 };
 parser.onattribute = function (attr) {
   // an attribute.  attr has "name" and "value"
+  console.log(`onAttribute: "${attr}"`)
 };
 parser.onend = function () {
   // parser stream is done, and ready to have more stuff written to it.
+  console.warn('end of XML')
 };
 
 parser.write('<xml>Hello, <who name="world">world</who>!</xml>').close();
@@ -75,14 +57,14 @@ Pass the following arguments to the parser function.  All are optional.
 
 Settings supported:
 
-* `trim` - Boolean. Whether or not to trim text and comment nodes.
-* `normalize` - Boolean. If true, then turn any whitespace into a single
+- `trim` - Boolean. Whether or not to trim text and comment nodes.
+- `normalize` - Boolean. If true, then turn any whitespace into a single
   space.
-* `lowercase` - Boolean. If true, then lowercase tag names and attribute names
+- `lowercase` - Boolean. If true, then lowercase tag names and attribute names
   in loose mode, rather than uppercasing them.
-* `xmlns` - Boolean. If true, then namespaces are supported.
-* `position` - Boolean. If false, then don't track line/col/position.
-* `strictEntities` - Boolean. If true, only parse [predefined XML
+- `xmlns` - Boolean. If true, then namespaces are supported.
+- `position` - Boolean. If false, then don't track line/col/position.
+- `strictEntities` - Boolean. If true, only parse [predefined XML
   entities](http://www.w3.org/TR/REC-xml/#sec-predefined-ent)
   (`&amp;`, `&apos;`, `&gt;`, `&lt;`, and `&quot;`)
 
@@ -191,11 +173,28 @@ to.
 event, and their contents are not checked for special xml characters.
 If you pass `noscript: true`, then this behavior is suppressed.
 
-## Reporting Problems
+# Disclaimers
 
-It's best to write a failing test if you find an issue.  I will always
-accept pull requests with failing tests if they demonstrate intended
-behavior, but it is very hard to figure out what issue you're describing
-without a test.  Writing a test is also the best way for you yourself
-to figure out if you really understand the issue you think you have with
-SAX-TypeScript.
+## What This Is (probably) Not
+
+- An HTML Parser - That's a fine goal, but this isn't it. It's just XML.
+- A DOM Builder - You can use it to build an object model out of XML, but it 
+does not do that out of the box.
+- XSLT - No DOM = no querying.
+- 100% Compliant with (some other SAX implementation) - Most SAX
+  implementations are in Java and do a lot more than this does.
+- An XML Validator - It does a little validation when in strict mode, but
+  not much.
+- A Schema-Aware XSD Thing - Schemas are an exercise in fetishistic
+  masochism.
+- A DTD-aware Thing - Fetching DTDs is a much bigger job.
+
+## Regarding `<!DOCTYPE`s and `<!ENTITY`s
+
+The parser will handle the basic XML entities in text nodes and attribute
+values: `&amp; &lt; &gt; &apos; &quot;`. It's possible to define additional
+entities in XML by putting them in the DTD. This parser does not do anything
+with that.
+
+Unknown entities will fail in strict mode, and in loose mode, will pass
+through unmolested.
