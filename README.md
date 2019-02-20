@@ -62,26 +62,6 @@ parser.onend = function () {
 };
 
 parser.write('<xml>Hello, <who name="world">world</who>!</xml>').close();
-
-// stream usage
-// takes the same options as the parser
-var saxStream = require("sax").createStream(strict, options)
-saxStream.on("error", function (e) {
-  // unhandled errors will throw, since this is a proper node
-  // event emitter.
-  console.error("error!", e)
-  // clear the error
-  this._parser.error = null
-  this._parser.resume()
-})
-saxStream.on("opentag", function (node) {
-  // same object as above
-})
-// pipe is supported, and it's readable/writable
-// same chunks coming in also go out.
-fs.createReadStream("file.xml")
-  .pipe(saxStream)
-  .pipe(fs.createWriteStream("file-copy.xml"))
 ```
 
 
@@ -145,9 +125,6 @@ All events emit with a single argument. To listen to an event, assign a
 function to `on<eventname>`. Functions get executed in the this-context of
 the parser object. The list of supported events are also in the exported
 `EVENTS` array.
-
-When using the stream interface, assign handlers using the EventEmitter
-`on` function in the normal fashion.
 
 `error` - Indication that something bad happened. The error will be hanging
 out on `parser.error`, and must be deleted before parsing can continue. By
