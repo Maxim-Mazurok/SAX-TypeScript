@@ -1,6 +1,6 @@
 # sax-ts
 
-## Simple API for XML in TypeScript
+**Simple API for XML in TypeScript**
 
 A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
 and HTML.
