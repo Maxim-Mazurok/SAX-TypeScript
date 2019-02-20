@@ -17,7 +17,8 @@ Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 ## Usage
 
 ```typescript
-import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.5/src/sax.ts';
+// import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.5/src/sax.ts'; TODO: change when published
+import { SAXParser } from 'https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/src/sax2.ts';
 const strict: boolean = true; // change to false for HTML parsing
 const options: {} = {}; // refer to "Arguments" section
 const parser = new SAXParser(strict, options);
@@ -28,15 +29,15 @@ parser.onerror = function (e) {
 };
 parser.ontext = function (t) {
   // got some text.  t is the string of text.
-  console.log(`onText: ${t}`)
+  console.log('onText: ', t)
 };
 parser.onopentag = function (node) {
   // opened a tag.  node has "name" and "attributes"
-  console.log(`onOpenTag: "${node}"`)
+  console.log('onOpenTag: ', node)
 };
 parser.onattribute = function (attr) {
   // an attribute.  attr has "name" and "value"
-  console.log(`onAttribute: "${attr}"`)
+  console.log('onAttribute: ', attr)
 };
 parser.onend = function () {
   // parser stream is done, and ready to have more stuff written to it.
