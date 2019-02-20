@@ -1,8 +1,14 @@
-const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
-const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
-const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
-const entityBody = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
-export const ENTITIES: { [key: string]: number | string } = {
+// TODO: remove all "any" types and
+
+const nameStart =
+    /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
+const nameBody =
+    /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
+const entityStart =
+    /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
+const entityBody =
+    /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
+export const ENTITIES: {[key: string]: number|string} = {
   'amp': '&',
   'gt': '>',
   'lt': '<',
@@ -270,11 +276,13 @@ export class SAX implements SAXInterface {
   [key: string]: any;
 
   EVENTS: string[];
-  ENTITIES: { [key: string]: number | string } = { // TODO: make it readonly, needed for entity-mega test
-    // amp, gt, lt, quot and apos are resolved to strings instead of numerical codes, IDK why
+  ENTITIES: {[key: string]: number|string} = {
+    // TODO: make it readonly, needed for entity-mega test
+    // amp, gt, lt, quot and apos are resolved to strings instead of numerical
+    // codes, IDK why
     ...ENTITIES,
   };
-  protected XML_ENTITIES: { [key: string]: string } = {
+  protected XML_ENTITIES: {[key: string]: string} = {
     'amp': '&',
     'gt': '>',
     'lt': '<',
@@ -303,45 +311,44 @@ export class SAX implements SAXInterface {
   protected attribList: any[] = [];
   protected ns: any;
   protected position = 0;
-  private STATE: { [index: string]: any } = {
-    BEGIN: this.S++, // leading byte order mark or whitespace
-    BEGIN_WHITESPACE: this.S++, // leading whitespace
-    TEXT: this.S++, // general stuff
-    TEXT_ENTITY: this.S++, // &amp and such.
-    OPEN_WAKA: this.S++, // <
-    SGML_DECL: this.S++, // <!BLARG
-    SGML_DECL_QUOTED: this.S++, // <!BLARG foo "bar
-    DOCTYPE: this.S++, // <!DOCTYPE
-    DOCTYPE_QUOTED: this.S++, // <!DOCTYPE "//blah
-    DOCTYPE_DTD: this.S++, // <!DOCTYPE "//blah" [ ...
-    DOCTYPE_DTD_QUOTED: this.S++, // <!DOCTYPE "//blah" [ "foo
-    COMMENT_STARTING: this.S++, // <!-
-    COMMENT: this.S++, // <!--
-    COMMENT_ENDING: this.S++, // <!-- blah -
-    COMMENT_ENDED: this.S++, // <!-- blah --
-    CDATA: this.S++, // <![CDATA[ something
-    CDATA_ENDING: this.S++, // ]
-    CDATA_ENDING_2: this.S++, // ]]
-    PROC_INST: this.S++, // <?hi
-    PROC_INST_BODY: this.S++, // <?hi there
-    PROC_INST_ENDING: this.S++, // <?hi "there" ?
-    OPEN_TAG: this.S++, // <strong
-    OPEN_TAG_SLASH: this.S++, // <strong /
-    ATTRIB: this.S++, // <a
-    ATTRIB_NAME: this.S++, // <a foo
-    ATTRIB_NAME_SAW_WHITE: this.S++, // <a foo _
-    ATTRIB_VALUE: this.S++, // <a foo=
-    ATTRIB_VALUE_QUOTED: this.S++, // <a foo="bar
-    ATTRIB_VALUE_CLOSED: this.S++, // <a foo="bar"
-    ATTRIB_VALUE_UNQUOTED: this.S++, // <a foo=bar
-    ATTRIB_VALUE_ENTITY_Q: this.S++, // <foo bar="&quot;"
-    ATTRIB_VALUE_ENTITY_U: this.S++, // <foo bar=&quot
-    CLOSE_TAG: this.S++, // </a
-    CLOSE_TAG_SAW_WHITE: this.S++, // </a   >
-    SCRIPT: this.S++, // <script> ...
-    SCRIPT_ENDING: this.S++, // <script> ... <
+  private STATE: {[index: string]: any} = {
+    BEGIN: this.S++,                  // leading byte order mark or whitespace
+    BEGIN_WHITESPACE: this.S++,       // leading whitespace
+    TEXT: this.S++,                   // general stuff
+    TEXT_ENTITY: this.S++,            // &amp and such.
+    OPEN_WAKA: this.S++,              // <
+    SGML_DECL: this.S++,              // <!BLARG
+    SGML_DECL_QUOTED: this.S++,       // <!BLARG foo "bar
+    DOCTYPE: this.S++,                // <!DOCTYPE
+    DOCTYPE_QUOTED: this.S++,         // <!DOCTYPE "//blah
+    DOCTYPE_DTD: this.S++,            // <!DOCTYPE "//blah" [ ...
+    DOCTYPE_DTD_QUOTED: this.S++,     // <!DOCTYPE "//blah" [ "foo
+    COMMENT_STARTING: this.S++,       // <!-
+    COMMENT: this.S++,                // <!--
+    COMMENT_ENDING: this.S++,         // <!-- blah -
+    COMMENT_ENDED: this.S++,          // <!-- blah --
+    CDATA: this.S++,                  // <![CDATA[ something
+    CDATA_ENDING: this.S++,           // ]
+    CDATA_ENDING_2: this.S++,         // ]]
+    PROC_INST: this.S++,              // <?hi
+    PROC_INST_BODY: this.S++,         // <?hi there
+    PROC_INST_ENDING: this.S++,       // <?hi "there" ?
+    OPEN_TAG: this.S++,               // <strong
+    OPEN_TAG_SLASH: this.S++,         // <strong /
+    ATTRIB: this.S++,                 // <a
+    ATTRIB_NAME: this.S++,            // <a foo
+    ATTRIB_NAME_SAW_WHITE: this.S++,  // <a foo _
+    ATTRIB_VALUE: this.S++,           // <a foo=
+    ATTRIB_VALUE_QUOTED: this.S++,    // <a foo="bar
+    ATTRIB_VALUE_CLOSED: this.S++,    // <a foo="bar"
+    ATTRIB_VALUE_UNQUOTED: this.S++,  // <a foo=bar
+    ATTRIB_VALUE_ENTITY_Q: this.S++,  // <foo bar="&quot;"
+    ATTRIB_VALUE_ENTITY_U: this.S++,  // <foo bar=&quot
+    CLOSE_TAG: this.S++,              // </a
+    CLOSE_TAG_SAW_WHITE: this.S++,    // </a   >
+    SCRIPT: this.S++,                 // <script> ...
+    SCRIPT_ENDING: this.S++,          // <script> ... <
   };
-  private SAXParser: any;
   private readonly BUFFERS: string[];
   private parser: (strict: boolean, opt: any) => SAXParser;
   private CDATA = '[CDATA[';
@@ -364,7 +371,6 @@ export class SAX implements SAXInterface {
   private startTagPosition = 0;
 
   constructor() {
-    this.SAXParser = SAXParser;
     this.BUFFERS = [
       'comment',
       'sgmlDecl',
@@ -442,7 +448,7 @@ export class SAX implements SAXInterface {
     return !SAX.isMatch(regex, c);
   }
 
-  private static qname(name: string, attribute?: string | boolean) {
+  private static qname(name: string, attribute?: string|boolean) {
     const i = name.indexOf(':');
     const qualName = i < 0 ? ['', name] : name.split(':');
     let prefix = qualName[0];
@@ -457,12 +463,13 @@ export class SAX implements SAXInterface {
     return {prefix, local};
   }
 
-  write(chunk: null | object | string) {
+  write(chunk: null|object|string) {
     if (this.error) {
       throw this.error;
     }
     if (this.closed) {
-      return this.errorFunction('Cannot write after close. Assign an onready handler.');
+      return this.errorFunction(
+          'Cannot write after close. Assign an onready handler.');
     }
     if (chunk === null) {
       return this.end();
@@ -622,7 +629,7 @@ export class SAX implements SAXInterface {
           if (c === '>') {
             this.state = this.S.TEXT;
             this.emitNode('ondoctype', this.doctype);
-            this.doctype = true; // just remember that we saw it.
+            this.doctype = true;  // just remember that we saw it.
           } else {
             this.doctype += c;
             if (c === '[') {
@@ -980,7 +987,8 @@ export class SAX implements SAXInterface {
             this[buffer] += this.parseEntity();
             this.entity = '';
             this.state = returnState;
-          } else if (SAX.isMatch(this.entity.length ? entityBody : entityStart, c)) {
+          } else if (SAX.isMatch(
+                         this.entity.length ? entityBody : entityStart, c)) {
             this.entity += c;
           } else {
             this.strictFail('Invalid character in entity name');
@@ -994,7 +1002,7 @@ export class SAX implements SAXInterface {
         default:
           throw new Error('Unknown state: ' + this.state);
       }
-    } // while
+    }  // while
 
     if (this.position >= this.bufferCheckPosition) {
       this.checkBufferLength();
@@ -1002,8 +1010,8 @@ export class SAX implements SAXInterface {
     return this;
   }
 
-  protected emit(event: string, data?: Error | {}) {
-    this[event] && this[event](data);
+  protected emit(event: string, data?: Error|{}): void {
+    if (this.hasOwnProperty(event)) this[event](data);
   }
 
   protected clearBuffers() {
@@ -1027,24 +1035,22 @@ export class SAX implements SAXInterface {
   protected end() {
     if (this.sawRoot && !this.closedRoot) this.strictFail('Unclosed root tag');
     if ((this.state !== this.S.BEGIN) &&
-      (this.state !== this.S.BEGIN_WHITESPACE) &&
-      (this.state !== this.S.TEXT)) {
+        (this.state !== this.S.BEGIN_WHITESPACE) &&
+        (this.state !== this.S.TEXT)) {
       this.errorFunction('Unexpected end');
     }
     this.closeText();
     this.c = '';
     this.closed = true;
     this.emit('onend');
-    new SAXParser(this.strict, this.opt);
-    return this;
+    return new SAXParser(this.strict, this.opt);
   }
 
   protected errorFunction(er: string) {
     this.closeText();
     if (this.trackPosition) {
-      er += '\nLine: ' + this.line +
-        '\nColumn: ' + this.column +
-        '\nChar: ' + this.c;
+      er += '\nLine: ' + this.line + '\nColumn: ' + this.column +
+          '\nChar: ' + this.c;
     }
     const error = new Error(er);
     this.error = error;
@@ -1058,7 +1064,7 @@ export class SAX implements SAXInterface {
     }
 
     if (this.attribList.indexOf(this.attribName) !== -1 ||
-      this.tag.attributes.hasOwnProperty(this.attribName)) {
+        this.tag.attributes.hasOwnProperty(this.attribName)) {
       this.attribName = this.attribValue = '';
       return;
     }
@@ -1071,11 +1077,14 @@ export class SAX implements SAXInterface {
       if (prefix === 'xmlns') {
         // namespace binding attribute. push the binding into scope
         if (local === 'xml' && this.attribValue !== this.XML_NAMESPACE) {
-          this.strictFail('xml: prefix must be bound to ' + this.XML_NAMESPACE + '\n' +
-            'Actual: ' + this.attribValue);
-        } else if (local === 'xmlns' && this.attribValue !== this.XMLNS_NAMESPACE) {
-          this.strictFail('xmlns: prefix must be bound to ' + this.XMLNS_NAMESPACE + '\n' +
-            'Actual: ' + this.attribValue);
+          this.strictFail(
+              'xml: prefix must be bound to ' + this.XML_NAMESPACE + '\n' +
+              'Actual: ' + this.attribValue);
+        } else if (
+            local === 'xmlns' && this.attribValue !== this.XMLNS_NAMESPACE) {
+          this.strictFail(
+              'xmlns: prefix must be bound to ' + this.XMLNS_NAMESPACE + '\n' +
+              'Actual: ' + this.attribValue);
         } else {
           const tag = this.tag;
           const parent = this.tags[this.tags.length - 1] || this;
@@ -1131,10 +1140,14 @@ export class SAX implements SAXInterface {
     if (entity.charAt(0) === '#') {
       if (entity.charAt(1) === 'x') {
         entity = entity.slice(2);
+        // TODO: remove tslint:disable
+        // tslint:disable-next-line
         num = parseInt(entity, 16);
         numStr = num.toString(16);
       } else {
         entity = entity.slice(1);
+        // TODO: remove tslint:disable
+        // tslint:disable-next-line
         num = parseInt(entity, 10);
         numStr = num.toString(10);
       }
@@ -1185,8 +1198,11 @@ export class SAX implements SAXInterface {
 
   private closeText() {
     this.textNode = this.textApplyOptions(this.textNode);
-    //TODO: figure out why this.textNode can be "" and "undefined"
-    if (this.textNode !== undefined && this.textNode !== '' && this.textNode !== 'undefined') this.emit('ontext', this.textNode);
+    // TODO: figure out why this.textNode can be "" and "undefined"
+    if (this.textNode !== undefined && this.textNode !== '' &&
+        this.textNode !== 'undefined') {
+      this.emit('ontext', this.textNode);
+    }
     this.textNode = '';
   }
 
@@ -1194,7 +1210,9 @@ export class SAX implements SAXInterface {
     const maxAllowed = Math.max(this.opt.MAX_BUFFER_LENGTH, 10);
     let maxActual = 0;
     for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
-      const len = this.hasOwnProperty(this.BUFFERS[i]) ? this[this.BUFFERS[i]].length : 0;
+      const len = this.hasOwnProperty(this.BUFFERS[i]) ?
+          this[this.BUFFERS[i]].length :
+          0;
       if (len > maxAllowed) {
         // Text/cdata nodes can get big, and since they're buffered,
         // we can get here under normal conditions.
@@ -1213,7 +1231,8 @@ export class SAX implements SAXInterface {
             this.script = '';
             break;
           default:
-            this.errorFunction('Max buffer length exceeded: ' + this.BUFFERS[i]);
+            this.errorFunction(
+                'Max buffer length exceeded: ' + this.BUFFERS[i]);
         }
       }
       maxActual = Math.max(maxActual, len);
@@ -1235,8 +1254,8 @@ export class SAX implements SAXInterface {
       tag.uri = tag.ns[qn.prefix] || '';
 
       if (tag.prefix && !tag.uri) {
-        this.strictFail('Unbound namespace prefix: ' +
-          JSON.stringify(this.tagName));
+        this.strictFail(
+            'Unbound namespace prefix: ' + JSON.stringify(this.tagName));
         tag.uri = qn.prefix;
       }
 
@@ -1273,8 +1292,8 @@ export class SAX implements SAXInterface {
         // if there's any attributes with an undefined namespace,
         // then fail on them now.
         if (prefix && prefix !== 'xmlns' && !uri) {
-          this.strictFail('Unbound namespace prefix: ' +
-            JSON.stringify(prefix));
+          this.strictFail(
+              'Unbound namespace prefix: ' + JSON.stringify(prefix));
           a.uri = prefix;
         }
         this.tag.attributes[name] = a;
@@ -1353,7 +1372,7 @@ export class SAX implements SAXInterface {
       this.tagName = this.tag.name;
       this.emitNode('onclosetag', this.tagName);
 
-      const x: { [index: string]: any } = {};
+      const x: {[index: string]: any} = {};
       for (const i in tag.ns) {
         if (tag.ns.hasOwnProperty(i)) {
           x[i] = tag.ns[i];
@@ -1398,7 +1417,8 @@ export class SAXParser extends SAX {
     this.noscript = !!(strict || this.opt.noscript);
     this.state = this.S.BEGIN;
     this.strictEntities = this.opt.strictEntities;
-    this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) : Object.create(this.ENTITIES);
+    this.ENTITIES = this.strictEntities ? Object.create(this.XML_ENTITIES) :
+                                          Object.create(this.ENTITIES);
     this.attribList = [];
 
     // namespaces form a prototype chain.
