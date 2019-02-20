@@ -12,10 +12,11 @@ Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 - A very simple tool to parse through an XML string.
 - A handy way to deal with RSS and other mostly-ok-but-kinda-broken XML
   docs.
-- A perfect way to parse 80 GB of XML data and don't burn your laptop :) 
+- A perfect way to parse 80 GB of XML data and don't burn your laptop :)
 
 ## Usage
 
+### Deno
 ```typescript
 // import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.5/src/sax.ts'; TODO: change when published
 import { SAXParser } from 'https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/src/sax2.ts';
@@ -50,11 +51,12 @@ parser.write('<xml>Hello, <who name="world">world</who>!</xml>').close();
 
 ## Arguments
 
-Pass the following arguments to the parser function.  All are optional.
+Pass the following arguments to the parser function. All are optional.
 
-`strict` - Boolean. Whether or not to be a jerk. Default: `false`.
+`strict` - Boolean. Disabled "forgiving" mode. Default: `false`.
 
-`opt` - Object bag of settings regarding string formatting.  All default to `false`.
+`options` - Object bag of settings regarding string formatting. All default to 
+`false`.
 
 Settings supported:
 
@@ -82,26 +84,6 @@ event. Then, when the error is taken care of, you can call `resume` to
 continue parsing. Otherwise, the parser will not continue while in an error
 state.
 
-## Members
-
-At all times, the parser object will have the following members:
-
-`line`, `column`, `position` - Indications of the position in the XML
-document where the parser currently is looking.
-
-`startTagPosition` - Indicates the position where the current tag starts.
-
-`closed` - Boolean indicating whether or not the parser can be written to.
-If it's `true`, then wait for the `ready` event to write again.
-
-`strict` - Boolean indicating whether or not the parser is a jerk.
-
-`opt` - Any options passed into the constructor.
-
-`tag` - The current tag being dealt with.
-
-And a bunch of other stuff that you probably shouldn't touch.
-
 ## Events
 
 All events emit with a single argument. To listen to an event, assign a
@@ -113,6 +95,9 @@ the parser object. The list of supported events are also in the exported
 out on `parser.error`, and must be deleted before parsing can continue. By
 listening to this event, you can keep an eye on that kind of stuff. Note:
 this happens *much* more in strict mode. Argument: instance of `Error`.
+```javascript
+//TODO: currently `error` is protected, need to expose it to user somehow.
+```
 
 `text` - Text node. Argument: string of text.
 
@@ -144,7 +129,7 @@ self-closing tags will have `closeTag` emitted immediately after `openTag`.
 Argument: tag name.
 
 `attribute` - An attribute node.  Argument: object with `name` and `value`.
-In non-strict mode, attribute names are uppercased, unless the `lowercase`
+In non-strict mode, attribute names are in upper-case, unless the `lowercase`
 option is set.  If the `xmlns` option is set, it will also contains namespace
 information.
 
@@ -173,6 +158,8 @@ to.
 `noscript` - In non-strict mode, `<script>` tags trigger a `"script"`
 event, and their contents are not checked for special xml characters.
 If you pass `noscript: true`, then this behavior is suppressed.
+
+---
 
 # Disclaimers
 
