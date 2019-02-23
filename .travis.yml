@@ -1,0 +1,24 @@
+language: node_js
+
+node_js:
+  - node
+  - 11
+  - 10
+  - 9
+  - 8
+  - 7
+  - 6
+
+os:
+  - linux
+  - windows
+  - mac
+
+cache:
+  directories:
+    - $HOME/.npm
+
+notifications:
+  email: false
+script:
+  - npm run test
