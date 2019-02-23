@@ -1,4 +1,4 @@
-# sax-ts
+# sax-ts 📦
 
 **Simple API for XML in TypeScript**
 
