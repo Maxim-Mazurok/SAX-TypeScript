@@ -2,9 +2,18 @@
   "name": "sax-ts",
   "description": "Event-driven XML parser in TypeScript",
   "author": "Maxim Mazurok <maxim@mazurok.com> (https://maxim.mazurok.com/)",
+  "repository": "git://github.com/Maxim-Mazurok/sax-ts.git",
+  "homepage": "https://github.com/Maxim-Mazurok/sax-ts#readme",
+  "bugs": {
+    "url": "https://github.com/Maxim-Mazurok/sax-ts/issues/new/choose"
+  },
   "version": "1.2.5",
-  "main": "build/src/sax2.js",
+  "main": "build/src/sax.js",
   "license": "ISC",
+  "engines": {
+    "node": "11.10.0",
+    "npm": "6.8.0"
+  },
   "scripts": {
     "test": "tap test/*.js --cov -j4",
     "posttest": "npm run check",
@@ -18,17 +27,18 @@
     "prepare": "npm run compile",
     "pretest": "npm run compile"
   },
-  "repository": "git://github.com/Maxim-Mazurok/sax-ts.git",
   "files": [
-    "src/sax2.ts",
-    "build/src/sax2.d.ts",
-    "build/src/sax2.js",
+    "src/sax.ts",
+    "build/src/sax.js",
+    "build/src/sax.js.map",
+    "build/src/sax.d.ts",
     "LICENSE.md",
     "README.md"
   ],
   "devDependencies": {
+    "coveralls": "^3.0.3",
     "gts": "google/ts-style#master",
-    "tap": "^10.7.3",
+    "tap": "^12.5.3",
     "typescript": "~3.1.0"
   }
 }

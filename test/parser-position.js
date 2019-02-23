@@ -1,4 +1,4 @@
-var sax = require('../build/src/sax2.js')
+var sax = require('../build/src/sax.js')
 var tap = require('tap')
 
 function testPosition (chunks, expectedEvents) {

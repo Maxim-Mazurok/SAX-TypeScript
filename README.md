@@ -21,7 +21,7 @@ Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 ### Deno
 ```typescript
 // import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.5/src/sax.ts'; TODO: change when published
-import { SAXParser } from 'https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/src/sax2.ts';
+import { SAXParser } from 'https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/src/sax.ts';
 const strict: boolean = true; // change to false for HTML parsing
 const options: {} = {}; // refer to "Arguments" section
 const parser = new SAXParser(strict, options);

@@ -1,4 +1,4 @@
-var sax = require('../build/src/sax2.js')
+var sax = require('../build/src/sax.js')
 
 var t = require('tap')
 

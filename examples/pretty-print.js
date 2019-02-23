@@ -1,4 +1,4 @@
-var sax = require('../build/src/sax2.js'),
+var sax = require('../build/src/sax.js'),
   printer = sax.createStream(false, {lowercasetags: true, trim: true}),
   fs = require('fs')
 
