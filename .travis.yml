@@ -12,7 +12,7 @@ node_js:
 os:
   - linux
   - windows
-  - mac
+  - osx
 
 cache:
   directories:
