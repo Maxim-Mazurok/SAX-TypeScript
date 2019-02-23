@@ -23,7 +23,8 @@ Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 
 ### Deno
 ```typescript
-import { SAXParser } from 'https://unpkg.com/sax-ts@^1.2.7/src/sax.ts';
+import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.8/src/sax.ts';
+// for semver, use "@%5E1.2.8", which is the urlencoded version of "@^1.2.8"
 const strict: boolean = true; // change to false for HTML parsing
 const options: {} = {}; // refer to "Arguments" section
 const parser = new SAXParser(strict, options);

@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/Maxim-Mazurok/sax-ts/issues/new/choose"
   },
-  "version": "1.2.7",
+  "version": "1.2.8",
   "main": "build/src/sax.js",
   "license": "ISC",
   "engines": {
