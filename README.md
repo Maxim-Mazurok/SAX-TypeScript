@@ -5,6 +5,7 @@
 [![Build Status](https://travis-ci.org/Maxim-Mazurok/sax-ts.svg?branch=master)](https://travis-ci.org/Maxim-Mazurok/sax-ts)
 [![Coverage Status](https://coveralls.io/repos/github/Maxim-Mazurok/sax-ts/badge.svg?branch=master)](https://coveralls.io/github/Maxim-Mazurok/sax-ts?branch=master)
 [![License](https://img.shields.io/badge/license-ISC-brightgreen.svg)](https://github.com/Maxim-Mazurok/sax-ts/blob/master/LICENSE.md)
+[![NPM](https://img.shields.io/npm/v/sax-ts.svg)](https://www.npmjs.com/package/sax-ts)
 
 A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
 and HTML.
@@ -22,8 +23,7 @@ Designed with [deno](https://deno.land/) in mind, so it's **browser compatible**
 
 ### Deno
 ```typescript
-// import { SAXParser } from 'https://unpkg.com/sax-ts@1.2.5/src/sax.ts'; TODO: change when published
-import { SAXParser } from 'https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/src/sax.ts';
+import { SAXParser } from 'https://unpkg.com/sax-ts@^1.2.7/src/sax.ts';
 const strict: boolean = true; // change to false for HTML parsing
 const options: {} = {}; // refer to "Arguments" section
 const parser = new SAXParser(strict, options);
