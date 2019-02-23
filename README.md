@@ -2,6 +2,8 @@
 
 **Simple API for XML in TypeScript**
 
+[![Build Status](https://travis-ci.org/Maxim-Mazurok/sax-ts.svg?branch=master)](https://travis-ci.org/Maxim-Mazurok/sax-ts)
+
 A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
 and HTML.
 
