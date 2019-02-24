@@ -2,8 +2,9 @@
 If you are making a pull request, please add test cases (if applicable).
 Good test case must pass with your patch and must fail without patch.
 
-We support [WIP](https://github.com/marketplace/wip) tag in PR title, you should
+We support [WIP](https://github.com/marketplace/wip) tag in PR title, you can
 use it if your PR is not completed and should not be merged yet.
+Or use native [draft pull requests](https://github.blog/2019-02-14-introducing-draft-pull-requests/)
 
 ### Reporting [Issues](https://github.com/Maxim-Mazurok/sax-ts/issues)
 Please, use issue templates when opening new issue and 
