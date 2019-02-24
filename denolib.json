@@ -1,0 +1,15 @@
+{
+  "name": "sax-ts"
+  "author": "Maxim Mazurok",
+  "keywords": [
+    "xml",
+    "xml-parser",
+    "sax",
+    "sax-parser",
+    "typescript",
+    "deno",
+    "node",
+    "nodejs",
+    "node-js"
+  ]
+}
