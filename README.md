@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/Maxim-Mazurok/sax-ts/badge.svg?branch=master)](https://coveralls.io/github/Maxim-Mazurok/sax-ts?branch=master)
 [![License](https://img.shields.io/badge/license-ISC-brightgreen.svg)](https://github.com/Maxim-Mazurok/sax-ts/blob/master/LICENSE.md)
 [![NPM](https://img.shields.io/npm/v/sax-ts.svg)](https://www.npmjs.com/package/sax-ts)
-![DenoLib](https://img.shields.io/badge/dynamic/json.svg?label=DenoLib&query=$.name&url=https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/denolib.json)
+[![DenoLib](https://img.shields.io/badge/dynamic/json.svg?label=DenoLib&query=$.name&url=https://raw.githubusercontent.com/Maxim-Mazurok/sax-ts/master/denolib.json)](#)
 
 A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
 and HTML.
