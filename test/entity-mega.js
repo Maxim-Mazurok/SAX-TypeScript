@@ -1,17 +1,17 @@
-var sax = require('../')
-var xml = '<r>'
-var text = ''
-for (var i in sax.ENTITIES) {
-  xml += '&' + i + ';'
-  text += sax.ENTITIES[i]
+const sax = require('../');
+let xml = '<r>';
+let text = '';
+for (const i in sax.ENTITIES) {
+  xml += '&' + i + ';';
+  text += sax.ENTITIES[i];
 }
-xml += '</r>'
+xml += '</r>';
 require(__dirname).test({
   xml: xml,
   expect: [
-    ['opentagstart', {'name': 'R', attributes: {}}],
-    ['opentag', {'name': 'R', attributes: {}, isSelfClosing: false}],
+    ['opentagstart', {name: 'R', attributes: {}}],
+    ['opentag', {name: 'R', attributes: {}, isSelfClosing: false}],
     ['text', text],
-    ['closetag', 'R']
-  ]
-})
+    ['closetag', 'R'],
+  ],
+});

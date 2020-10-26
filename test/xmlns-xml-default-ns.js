@@ -1,18 +1,18 @@
-var xmlnsAttr = {
+const xmlnsAttr = {
   name: 'xmlns',
   value: 'http://foo',
   prefix: 'xmlns',
   local: '',
-  uri: 'http://www.w3.org/2000/xmlns/'
-}
+  uri: 'http://www.w3.org/2000/xmlns/',
+};
 
-var attrAttr = {
+const attrAttr = {
   name: 'attr',
   value: 'bar',
   prefix: '',
   local: 'attr',
-  uri: ''
-}
+  uri: '',
+};
 
 require(__dirname).test({
   xml: "<elm xmlns='http://foo' attr='bar'/>",
@@ -22,21 +22,12 @@ require(__dirname).test({
       {
         name: 'elm',
         attributes: {},
-        ns: {}
-      }
+        ns: {},
+      },
     ],
-    [
-      'opennamespace',
-      { prefix: '', uri: 'http://foo' }
-    ],
-    [
-      'attribute',
-      xmlnsAttr
-    ],
-    [
-      'attribute',
-      attrAttr
-    ],
+    ['opennamespace', {prefix: '', uri: 'http://foo'}],
+    ['attribute', xmlnsAttr],
+    ['attribute', attrAttr],
     [
       'opentag',
       {
@@ -44,28 +35,25 @@ require(__dirname).test({
         prefix: '',
         local: 'elm',
         uri: 'http://foo',
-        ns: { '': 'http://foo' },
+        ns: {'': 'http://foo'},
         attributes: {
           xmlns: xmlnsAttr,
-          attr: attrAttr
+          attr: attrAttr,
         },
-        isSelfClosing: true
-      }
+        isSelfClosing: true,
+      },
     ],
-    [
-      'closetag',
-      'elm'
-    ],
+    ['closetag', 'elm'],
     [
       'closenamespace',
       {
         prefix: '',
-        uri: 'http://foo'
-      }
-    ]
+        uri: 'http://foo',
+      },
+    ],
   ],
   strict: true,
   opt: {
-    xmlns: true
-  }
-})
+    xmlns: true,
+  },
+});

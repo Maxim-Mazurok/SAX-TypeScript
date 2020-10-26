@@ -18,25 +18,26 @@
     "nodejs",
     "node-js"
   ],
-  "version": "1.2.9",
+  "version": "1.2.10",
   "main": "build/src/sax.js",
   "license": "ISC",
   "engines": {
-    "node": "11.10.0",
-    "npm": "6.8.0"
+    "node": "12.19.0",
+    "npm": "6.14.8"
   },
   "scripts": {
     "test": "tap test/*.js --cov -j4",
-    "posttest": "npm run check",
+    "posttest": "npm run lint",
     "preversion": "npm test",
     "postversion": "npm publish",
     "postpublish": "git push origin --all; git push origin --tags",
     "check": "gts check",
     "clean": "gts clean",
-    "compile": "tsc -p .",
+    "compile": "tsc",
     "fix": "gts fix",
     "prepare": "npm run compile",
-    "pretest": "npm run compile"
+    "pretest": "npm run compile",
+    "lint": "gts lint"
   },
   "files": [
     "src/sax.ts",
@@ -47,9 +48,11 @@
     "README.md"
   ],
   "devDependencies": {
-    "coveralls": "^3.0.3",
-    "gts": "google/ts-style#master",
-    "tap": "^12.5.3",
-    "typescript": "~3.1.0"
+    "@types/node": "^14.11.2",
+    "coveralls": "^3.1.0",
+    "gts": "^3.0.2",
+    "prettier": "^2.1.2",
+    "tap": "^14.10.8",
+    "typescript": "^4.0.3"
   }
 }

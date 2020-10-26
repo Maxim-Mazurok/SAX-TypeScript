@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/badge/license-ISC-brightgreen.svg)](https://github.com/Maxim-Mazurok/sax-ts/blob/master/LICENSE.md)
 [![NPM](https://img.shields.io/npm/v/sax-ts.svg)](https://www.npmjs.com/package/sax-ts)
 [![DenoLib](https://denolib.com/badge?scope=Maxim-Mazurok&repo=sax-ts)](https://github.com/denolib)
+[Deno Third Party Modules as `sax_ts`](https://deno.land/x/sax_ts)
 
 A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
 and HTML.
@@ -61,7 +62,7 @@ Pass the following arguments to the parser function. All are optional.
 
 `strict` - Boolean. Disabled "forgiving" mode. Default: `false`.
 
-`options` - Object bag of settings regarding string formatting. All default to 
+`options` - Object bag of settings regarding string formatting. All default to
 `false`.
 
 Settings supported:
@@ -172,7 +173,7 @@ If you pass `noscript: true`, then this behavior is suppressed.
 ## What This Is (probably) Not
 
 - An HTML Parser - That's a fine goal, but this isn't it. It's just XML.
-- A DOM Builder - You can use it to build an object model out of XML, but it 
+- A DOM Builder - You can use it to build an object model out of XML, but it
 does not do that out of the box.
 - XSLT - No DOM = no querying.
 - 100% Compliant with (some other SAX implementation) - Most SAX

@@ -1,10 +1,17 @@
-// TODO: remove all "any" types and
+/* eslint-disable no-constant-condition */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable no-empty */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable no-case-declarations */
+/* eslint-disable no-misleading-character-class */
+// TODO: remove all "any" types and fix eslint issues
 
 const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
 const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const entityBody = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
-export const ENTITIES: { [key: string]: number | string } = {
+export const ENTITIES: {[key: string]: number | string} = {
   amp: '&',
   gt: '>',
   lt: '<',
@@ -272,13 +279,13 @@ export class SAX implements SAXInterface {
   [key: string]: any;
 
   EVENTS: string[];
-  ENTITIES: { [key: string]: number | string } = {
+  ENTITIES: {[key: string]: number | string} = {
     // TODO: make it readonly, needed for entity-mega test
     // amp, gt, lt, quot and apos are resolved to strings instead of numerical
     // codes, IDK why
     ...ENTITIES,
   };
-  protected XML_ENTITIES: { [key: string]: string } = {
+  protected XML_ENTITIES: {[key: string]: string} = {
     amp: '&',
     gt: '>',
     lt: '<',
@@ -307,7 +314,7 @@ export class SAX implements SAXInterface {
   protected attribList: any[] = [];
   protected ns: any;
   protected position = 0;
-  private STATE: { [index: string]: any } = {
+  private STATE: {[index: string]: any} = {
     BEGIN: this.S++, // leading byte order mark or whitespace
     BEGIN_WHITESPACE: this.S++, // leading whitespace
     TEXT: this.S++, // general stuff
@@ -459,7 +466,7 @@ export class SAX implements SAXInterface {
       local = '';
     }
 
-    return { prefix, local };
+    return {prefix, local};
   }
 
   write(chunk: null | object | string) {
@@ -1134,7 +1141,7 @@ export class SAX implements SAXInterface {
   private newTag() {
     if (!this.strict) this.tagName = this.tagName[this.looseCase]();
     const parent = this.tags[this.tags.length - 1] || this;
-    const tag: any = (this.tag = { name: this.tagName, attributes: {} });
+    const tag: any = (this.tag = {name: this.tagName, attributes: {}});
 
     // will be overridden if tag contains an xmlns="foo" or xmlns:foo="bar"
     if (this.opt.xmlns) {
@@ -1398,7 +1405,7 @@ export class SAX implements SAXInterface {
       this.tagName = this.tag.name;
       this.emitNode('onclosetag', this.tagName);
 
-      const x: { [index: string]: any } = {};
+      const x: {[index: string]: any} = {};
       for (const i in tag.ns) {
         if (tag.ns.hasOwnProperty(i)) {
           x[i] = tag.ns[i];
@@ -1411,7 +1418,7 @@ export class SAX implements SAXInterface {
         const that = this;
         Object.keys(tag.ns).forEach(p => {
           const n = tag.ns[p];
-          that.emitNode('onclosenamespace', { prefix: p, uri: n });
+          that.emitNode('onclosenamespace', {prefix: p, uri: n});
         });
       }
     }
@@ -1432,7 +1439,7 @@ export class SAXParser extends SAX {
 
     this.clearBuffers();
     this.q = this.c = '';
-    this.opt = { MAX_BUFFER_LENGTH: 64 * 1024, ...opt };
+    this.opt = {MAX_BUFFER_LENGTH: 64 * 1024, ...opt};
     this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
     this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags || false;
     this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';

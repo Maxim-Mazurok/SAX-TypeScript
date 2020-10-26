@@ -1,6 +1,14 @@
 "use strict";
-// TODO: remove all "any" types and
+/* eslint-disable no-constant-condition */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable no-empty */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable no-case-declarations */
+/* eslint-disable no-misleading-character-class */
+// TODO: remove all "any" types and fix eslint issues
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SAXParser = exports.SAX = exports.ENTITIES = void 0;
 const nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
 const nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
 const entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
@@ -266,7 +274,12 @@ Object.keys(exports.ENTITIES).forEach(key => {
 });
 class SAX {
     constructor() {
-        this.ENTITIES = Object.assign({}, exports.ENTITIES);
+        this.ENTITIES = {
+            // TODO: make it readonly, needed for entity-mega test
+            // amp, gt, lt, quot and apos are resolved to strings instead of numerical
+            // codes, IDK why
+            ...exports.ENTITIES,
+        };
         this.XML_ENTITIES = {
             amp: '&',
             gt: '>',
@@ -1385,7 +1398,7 @@ class SAXParser extends SAX {
         }
         this.clearBuffers();
         this.q = this.c = '';
-        this.opt = Object.assign({ MAX_BUFFER_LENGTH: 64 * 1024 }, opt);
+        this.opt = { MAX_BUFFER_LENGTH: 64 * 1024, ...opt };
         this.bufferCheckPosition = this.opt.MAX_BUFFER_LENGTH;
         this.opt.lowercase = this.opt.lowercase || this.opt.lowercasetags || false;
         this.looseCase = this.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
