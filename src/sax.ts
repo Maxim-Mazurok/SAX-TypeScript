@@ -1240,9 +1240,7 @@ export class SAX implements SAXInterface {
     const maxAllowed = Math.max(this.opt.MAX_BUFFER_LENGTH, 10);
     let maxActual = 0;
     for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
-      const len = this.hasOwnProperty(this.BUFFERS[i])
-        ? this[this.BUFFERS[i]].length
-        : 0;
+      const len = this[this.BUFFERS[i]]?.length || 0;
       if (len > maxAllowed) {
         // Text/cdata nodes can get big, and since they're buffered,
         // we can get here under normal conditions.
