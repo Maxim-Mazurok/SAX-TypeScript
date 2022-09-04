@@ -338,7 +338,7 @@ class SAX {
             CLOSE_TAG: this.S++,
             CLOSE_TAG_SAW_WHITE: this.S++,
             SCRIPT: this.S++,
-            SCRIPT_ENDING: this.S++,
+            SCRIPT_ENDING: this.S++, // <script> ... <
         };
         this.CDATA = '[CDATA[';
         this.DOCTYPE = 'DOCTYPE';
@@ -1196,12 +1196,11 @@ class SAX {
         this.textNode = '';
     }
     checkBufferLength() {
+        var _a;
         const maxAllowed = Math.max(this.opt.MAX_BUFFER_LENGTH, 10);
         let maxActual = 0;
         for (let i = 0, l = this.BUFFERS.length; i < l; i++) {
-            const len = this.hasOwnProperty(this.BUFFERS[i])
-                ? this[this.BUFFERS[i]].length
-                : 0;
+            const len = ((_a = this[this.BUFFERS[i]]) === null || _a === void 0 ? void 0 : _a.length) || 0;
             if (len > maxAllowed) {
                 // Text/cdata nodes can get big, and since they're buffered,
                 // we can get here under normal conditions.

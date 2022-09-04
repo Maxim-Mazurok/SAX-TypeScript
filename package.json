@@ -26,7 +26,7 @@
     "npm": "6.14.8"
   },
   "scripts": {
-    "test": "tap test/*.js --cov -j4 && deno test --allow-read deno-test/*.ts",
+    "test": "tap test/*.js --cov -j4",
     "posttest": "npm run lint",
     "preversion": "npm test",
     "postversion": "npm publish",
