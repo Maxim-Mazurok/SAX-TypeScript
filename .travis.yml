@@ -10,6 +10,12 @@ os:
 cache:
   directories:
     - $HOME/.npm
+    - $HOME/.deno
+
+before_install:
+    - curl -fsSL https://deno.land/x/install/install.sh | sh
+    - export DENO_INSTALL="$HOME/.deno"
+    - export PATH="$DENO_INSTALL/bin:$PATH"
 
 notifications:
   email: false
