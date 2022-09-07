@@ -18,7 +18,7 @@
     "nodejs",
     "node-js"
   ],
-  "version": "1.2.10",
+  "version": "1.2.11",
   "main": "build/src/sax.js",
   "license": "ISC",
   "engines": {

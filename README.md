@@ -2,8 +2,7 @@
 
 **Simple API for XML in TypeScript**
 
-[![Build Status](https://travis-ci.org/Maxim-Mazurok/sax-ts.svg?branch=master)](https://travis-ci.org/Maxim-Mazurok/sax-ts)
-[![Coverage Status](https://coveralls.io/repos/github/Maxim-Mazurok/sax-ts/badge.svg?branch=master)](https://coveralls.io/github/Maxim-Mazurok/sax-ts?branch=master)
+[![CI status](https://github.com/Maxim-Mazurok/sax-ts/actions/workflows/test.yml/badge.svg)](https://github.com/Maxim-Mazurok/sax-ts/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-ISC-brightgreen.svg)](https://github.com/Maxim-Mazurok/sax-ts/blob/master/LICENSE.md)
 [![NPM](https://img.shields.io/npm/v/sax-ts.svg)](https://www.npmjs.com/package/sax-ts)
 [![DenoLib](https://denolib.com/badge?scope=Maxim-Mazurok&repo=sax-ts)](https://github.com/denolib)
