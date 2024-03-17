@@ -6,7 +6,9 @@
 [![License](https://img.shields.io/badge/license-ISC-brightgreen.svg)](https://github.com/Maxim-Mazurok/sax-ts/blob/master/LICENSE.md)
 [![NPM](https://img.shields.io/npm/v/sax-ts.svg)](https://www.npmjs.com/package/sax-ts)
 [![DenoLib](https://denolib.com/badge?scope=Maxim-Mazurok&repo=sax-ts)](https://github.com/denolib)
-[Deno Third Party Modules as `sax_ts`](https://deno.land/x/sax_ts)
+[![Deno Third Party Modules](https://shield.deno.dev/x/sax_ts)](https://deno.land/x/sax_ts)
+[![JSR](https://jsr.io/badges/@maxim-mazurok/sax_ts)](https://jsr.io/@maxim-mazurok/sax_ts)
+
 
 A [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML)-style parser for XML
 and HTML.

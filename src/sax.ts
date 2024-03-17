@@ -473,7 +473,7 @@ export class SAX implements SAXInterface {
     return {prefix, local};
   }
 
-  write(chunk: null | object | string) {
+  write(chunk: null | object | string): this | SAXParser {
     if (this.error) {
       throw this.error;
     }
@@ -1044,7 +1044,7 @@ export class SAX implements SAXInterface {
     }
   }
 
-  protected end() {
+  protected end(): SAXParser {
     if (this.sawRoot && !this.closedRoot) this.strictFail('Unclosed root tag');
     if (
       this.state !== this.S.BEGIN &&
@@ -1060,7 +1060,7 @@ export class SAX implements SAXInterface {
     return new SAXParser(this.strict, this.opt);
   }
 
-  protected errorFunction(er: string) {
+  protected errorFunction(er: string): this {
     this.closeText();
     if (this.trackPosition) {
       er +=
@@ -1492,12 +1492,12 @@ export class SAXParser extends SAX {
   onopennamespace: Function = () => {};
   onclosenamespace: Function = () => {};
 
-  resume() {
+  resume(): this {
     this.error = null;
     return this;
   }
 
-  close() {
+  close(): SAXParser | this {
     return this.write(null);
   }
 

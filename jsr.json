@@ -1,0 +1,5 @@
+{
+  "name": "@maxim-mazurok/sax-ts",
+  "version": "1.2.12",
+  "exports": "./src/sax.ts"
+}
